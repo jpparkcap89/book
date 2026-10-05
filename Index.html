@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>『꿈의 공책』 도서 신청</title>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body { background-color: #f5f6f8; margin: 0; padding: 20px 0; display: flex; justify-content: center; }
+    .container { 
+      background: #fff; 
+      padding: 28px; 
+      border-radius: 16px; 
+      width: 80%; 
+      max-width: 800px; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+    }
+    @media (max-width: 600px) {
+      body { padding: 10px 0; }
+      .container {
+        width: 95%;
+        padding: 18px;
+        border-radius: 12px;
+      }
+    }
+    h2 { text-align: center; color: #222; margin-top: 0; margin-bottom: 8px; font-size: 22px; word-break: keep-all; }
+    p.desc { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; word-break: keep-all; line-height: 1.4; }
+    /* 🔖 상단 책 소개 탭 박스 */
+    .book-intro-tab-container {
+      background: #ffffff;
+      border: 1px solid #e0e4eb;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .book-intro-tab-header {
+      background-color: #4B6BFB;
+      color: #ffffff;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .book-intro-tab-body {
+      padding: 20px 18px;
+    }
+    .book-cover-wrapper {
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      background-color: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .book-cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .book-intro-card {
+      background: linear-gradient(135deg, #fff5ee 0%, #fef0e6 100%);
+      border: 1px solid #fbe3d5;
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+    .book-intro-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #d96b27;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .book-intro-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #4a4a4a;
+      margin: 0;
+      word-break: keep-all;
+    }
+    /* 📖 책 소개 모달 열기 버튼 */
+    .btn-book-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 14px;
+      background-color: #4B6BFB;
+      color: #ffffff;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-book-info:hover {
+      background-color: #3b5bdb;
+    }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #333; }
+    label .required { color: #e53e3e; margin-left: 2px; }
+    input[type="text"], input[type="tel"], select { width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; background-color: #fff; appearance: none; -webkit-appearance: none; }
+    input:focus, select:focus { border-color: #4B6BFB; box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.1); }
+    select { background: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 10px center/18px; }
+    .zipcode-box { display: flex; gap: 8px; }
+    .zipcode-box input { flex: 1; background-color: #f9f9f9; }
+    .btn-search { padding: 0 16px; background: #4B6BFB; color: white; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap; font-weight: 600; font-size: 14px; }
+    .privacy-info-box {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 13px;
+      color: #495057;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .privacy-info-box ul { margin: 0; padding-left: 18px; }
+    .privacy-info-box li { margin-bottom: 4px; }
+    .agree-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 4px 0;
+    }
+    .agree-container input[type="checkbox"] { width: 20px; height: 20px; accent-color: #4B6BFB; cursor: pointer; margin: 0; }
+    .agree-label-text { font-size: 14px; font-weight: 600; color: #212529; cursor: pointer; user-select: none; }
+    .btn-submit { width: 100%; padding: 15px; background: #4B6BFB; color: white; font-weight: bold; font-size: 16px; border: none; border-radius: 10px; cursor: pointer; margin-top: 6px; transition: background 0.2s; }
+    .btn-submit:disabled { background: #cccccc; cursor: not-allowed; }
+    .footer-logos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+    .footer-logo-img { max-height: 40px; width: auto; object-fit: contain; }
+    /* 📱 모달 레이아웃 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.55);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-card {
+      position: relative;
+      background-color: #fff;
+      width: 92%;
+      max-width: 720px;
+      height: 88vh;
+      max-height: 800px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header-bar {
+      padding: 16px 20px;
+      background: #4B6BFB;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #fff; padding: 0 4px; line-height: 1; }
+    .modal-body-scroll { padding: 28px 24px; overflow-y: auto; flex: 1; line-height: 1.75; }
+    /* 📖 요청하신 모달 내부 서점 상세 스타일 (이미지 양식 완벽 반영) */
+    .header-section {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+    .modal-book-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2b2b2b;
+      margin-bottom: 8px;
+    }
+    .modal-book-meta {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 14px;
+    }
+    .main-copy {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e67e22;
+      word-break: keep-all;
+    }
+    .story-section { margin-bottom: 30px; }
+    .section-tag {
+      display: inline-block;
+      background-color: #ffeaa7;
+      color: #d35400;
+      font-weight: bold;
+      font-size: 13px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .story-text {
+      font-size: 14.5px;
+      color: #444;
+      margin-bottom: 12px;
+      word-break: keep-all;
+    }
+    .quote-box {
+      background-color: #fdf6ec;
+      border-left: 4px solid #e67e22;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-style: italic;
+      color: #555;
+      font-size: 14px;
+      border-radius: 0 6px 6px 0;
+    }
+    .recommend-box {
+      background-color: #f0f7f4;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+    }
+    .recommend-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #27ae60;
+      margin-bottom: 10px;
+    }
+    .recommend-list {
+      list-style-type: '✔ ';
+      padding-left: 18px;
+      font-size: 14px;
+      color: #444;
+      line-height: 1.8;
+    }
+    .info-footer {
+      margin-top: 30px;
+      padding-top: 18px;
+      border-top: 1px dashed #ccc;
+      font-size: 13px;
+      color: #777;
+    }
+    .btn-aladin-link { display: block; text-align: center; margin-top: 20px; padding: 12px; background: #ffefea; color: #d96b27; border: 1px solid #ffd4c4; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; }
+  
+    .status-message { margin: 16px 0 0; padding: 14px; border-radius: 8px; line-height: 1.6; background: #edf2ff; color: #2743a2; }
+    .status-message.error { background: #fff1f0; color: #a12622; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #29354b; color: white; padding: 14px 20px; border-radius: 12px; z-index: 2000; width: max-content; max-width: 90%; }
+    .zipcode-box input { min-width: 0; }
+    @media (max-width: 600px) { input[type="text"], input[type="tel"], select { font-size: 16px; } .footer-logo-img { max-width: 42%; } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>📚 『꿈의 공책』 도서 신청</h2>
+  <p class="desc">『꿈의 공책(박선영 글, 한혜정 그림)』을 받으실 정확한 주소 정보를 입력해 주세요.</p>
+  <!-- 📌 상단 [책 소개 탭] 컨테이너 -->
+  <div class="book-intro-tab-container">
+    <div class="book-intro-tab-header">
+      <span>📖 도서 정보 및 소개</span>
+    </div>
+    <div class="book-intro-tab-body">
+      <div class="book-cover-wrapper">
+        <img src="https://lh3.googleusercontent.com/d/1KoQJab5ul7_Bw7lI2e5bKtE4HXf2Tgjw" alt="꿈의 공책 표지" class="book-cover-img">
+      </div>
+      <div class="book-intro-card">
+        <div class="book-intro-title">📖 내 안의 목소리를 듣는 시간</div>
+        <p class="book-intro-text">
+          "어디로 가야 할지 몰라 망설여진다면,<br>
+          조용히 공책을 펼쳐 보세요.<br>
+          마음을 하나씩 적다 보면 비로소 내 안의 목소리가 들리기 시작합니다."
+        </p>
+      </div>
+      <button type="button" class="btn-book-info" onclick="openBookDetailModal()">
+        📖 『꿈의 공책』 소개 보기 ↗
+      </button>
+    </div>
+  </div>
+  <form id="addressForm">
+    <!-- 수령인 성함 -->
+    <div class="form-group">
+      <label for="name">수령인 성함 <span class="required">*</span></label>
+      <input type="text" id="name" required placeholder="예: 홍길동">
+    </div>
+    <!-- 호칭 선택 -->
+    <div class="form-group">
+      <label for="honorificSelect">호칭 선택 <span class="required">*</span></label>
+      <select id="honorificSelect" required onchange="handleHonorificChange(this.value)">
+        <option value="선생님">선생님</option>
+        <option value="수석선생님">수석선생님</option>
+        <option value="교감선생님">교감선생님</option>
+        <option value="교장선생님">교장선생님</option>
+        <option value="작가님">작가님</option>
+        <option value="학생">학생</option>
+        <option value="custom">직접 입력</option>
+      </select>
+      <input type="text" id="honorificCustom" placeholder="호칭을 직접 입력해 주세요" style="display: none; margin-top: 8px;">
+    </div>
+    <!-- 연락처 -->
+    <div class="form-group">
+      <label for="phone">연락처 <span class="required">*</span></label>
+      <input type="tel" id="phone" required placeholder="010-0000-0000" maxlength="13" inputmode="numeric">
+    </div>
+    <!-- 주소 -->
+    <div class="form-group">
+      <label>주소 (우편번호 검색) <span class="required">*</span></label>
+      <div class="zipcode-box">
+        <input type="text" id="zipcode" placeholder="우편번호" readonly required onclick="openPostcodeModal()">
+        <button type="button" class="btn-search" onclick="openPostcodeModal()">우편번호 찾기</button>
+      </div>
+      <input type="text" id="address" placeholder="기본주소" readonly required style="margin-top: 8px; background-color: #f9f9f9;" onclick="openPostcodeModal()">
+      <input type="text" id="detailAddress" placeholder="상세주소 입력 (동, 호수 등)" style="margin-top: 8px;" required>
+    </div>
+    <!-- 개인정보 안내 -->
+    <div class="privacy-info-box">
+      <ul>
+        <li><strong>수집하는 정보:</strong> 성함, 직함, 전화번호, 주소</li>
+        <li><strong>수집 목적:</strong> 도서 발송 업무 처리, 도서 발송 후 바로 폐기 예정</li>
+        <li><strong>동의 거부 시:</strong> 동의하지 않을 수 있으며, 동의하지 않을 시 도서 발송이 어렵습니다.</li>
+      </ul>
+    </div>
+    <!-- 동의 체크박스 -->
+    <div class="agree-container">
+      <input type="checkbox" id="privacyAgree" required>
+      <label for="privacyAgree" class="agree-label-text">개인정보 수집 및 이용에 동의합니다.</label>
+    </div>
+    <!-- 제출 버튼 -->
+    <button type="submit" class="btn-submit" id="submitBtn" disabled>신청 제출하기</button>
+  </form>
+  <p id="submitStatus" class="status-message" role="status" hidden></p>
+  <!-- 하단 로고 -->
+  <div class="footer-logos">
+    <img src="https://lh3.googleusercontent.com/d/1fm8HSARX-D159xabPxSzPwypEE9VmD4v" alt="평택시" class="footer-logo-img">
+    <img src="https://lh3.googleusercontent.com/d/1oYR57LJm68kSnZAdGSg7QthIIQGBnUAR" alt="평택시문화재단" class="footer-logo-img">
+  </div>
+</div>
+<!-- 📕 1. 꿈의 공책 상세 소개 모달 (이미지의 서점 양식 구현) -->
+<div id="bookDetailModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header-bar">
+      <span>📖 『꿈의 공책』 상세 소개</span>
+      <button type="button" class="modal-close-btn" onclick="closeBookDetailModal()">&times;</button>
+    </div>
+    <div class="modal-body-scroll">
+      <!-- 헤더 영역 -->
+      <div class="header-section">
+        <h1 class="modal-book-title">꿈의 공책</h1>
+        <p class="modal-book-meta">글 박선영 · 그림 한혜정 · 도담소리</p>
+        <p class="main-copy">“나는 무엇을 좋아할까? 진짜 내 꿈은 무엇일까?”<br>흔들리고 방황하는 열한 살, 마음속 진짜 목소리를 찾아가는 따뜻한 성장 동화</p>
+      </div>
+      <!-- 첫 번째 이야기 -->
+      <div class="story-section">
+        <span class="section-tag">첫 번째 이야기</span>
+        <h2 class="section-title">내가 잘하는 것이 정말 내가 좋아하는 것일까</h2>
+        <p class="story-text">
+          초등학교 5학년 주하는 3년 동안 바이올린을 켜 왔습니다. 처음에는 한 음 한 음이 음악이 되는 순간이 신기하고 즐거웠지만, 매일 반복되는 연습과 다가오는 콩쿠르는 점점 무거운 부담이 됩니다.
+        </p>
+        <p class="story-text">
+          갑작스러운 집안 형편의 변화까지 알게 된 주하는 스스로에게 묻습니다. “내가 정말 바이올린에 소질이 있을까? 그냥 공부를 열심히 해야 하는 건 아닐까?” 결국 마음에 없는 핑계를 대며 바이올린을 그만두고 수학 학원에 등록하지만, 마음 한편의 답답함은 사라지지 않습니다.
+        </p>
+        <div class="quote-box">
+          “꿈이 뭐냐고 묻는데, 아무 대답도 떠오르지 않았다.”
+        </div>
+        <p class="story-text">
+          주하의 고민은 꿈을 아직 정하지 못한 아이뿐 아니라, 잘하는 일과 좋아하는 일 사이에서 흔들려 본 모든 독자의 마음을 조용히 두드립니다.
+        </p>
+      </div>
+      <!-- 두 번째 이야기 -->
+      <div class="story-section">
+        <span class="section-tag">두 번째 이야기</span>
+        <h2 class="section-title">마음의 등불을 켜 주는 물음표 공책</h2>
+        <p class="story-text">
+          자신감 넘치고 당당하게 육상선수의 꿈을 향해 달리는 전학생 수연이. 수연이는 주하의 남모를 고민을 눈치채고 표지에 물음표만 적힌 공책 한 권을 건냅니다.
+        </p>
+        <div class="quote-box">
+          "쓰면서 생각이 정리되기도 하고, 나중에 다시 읽어 보면 마음속에 작은 등불이 켜지는 것 같아."
+        </div>
+        <p class="story-text">
+          주하는 공책에 혼자만의 고민과 솔직한 마음을 한 줄 한 줄 적기 시작합니다. 남에게 보여 주기 위한 정답이 아니라, 자신도 미처 몰랐던 감정과 바람을 만나는 기록입니다. 물음표는 주하를 더 불안하게 만드는 표시가 아니라, 진짜 자신에게 가까이 가는 첫걸음이 됩니다.
+        </p>
+      </div>
+      <!-- 세 번째 이야기 -->
+      <div class="story-section">
+        <span class="section-tag">세 번째 이야기</span>
+        <h2 class="section-title">포기한 뒤에야 더 또렷해진 마음</h2>
+        <p class="story-text">
+          바이올린을 내려놓으면 마음이 편해질 줄 알았지만, 주하는 학교 복도에서 들려오는 오케스트라의 선율 앞에 멈춰 섭니다. 손이 저절로 움직이고, 함께 연주하고 싶은 마음이 차오릅니다. 그 순간 주하는 자신이 무엇을 할 때 가장 빛나는지 비로소 알아차립니다.
+        </p>
+        <div class="quote-box">
+          “수학 학원에서는 제가 못하고 못난 것 같은데, 바이올린을 할 때는 제가 멋진 것 같아요. 자신감이 생겨요.”
+        </div>
+        <p class="story-text">
+          잘하는 것과 좋아하는 것이 언제나 같지는 않습니다. 그러나 공책에 쓰다 보면 마음이 향하는 곳을 볼 수 있습니다. 그때 다시 시작할 용기를 얻게 됩니다.
+        </p>
+      </div>
+      <!-- 네 번째 이야기 -->
+      <div class="story-section">
+        <span class="section-tag">네 번째 이야기</span>
+        <h2 class="section-title">물음표가 꿈으로 바뀌는 순간</h2>
+        <p class="story-text">
+          주하는 다시 바이올린을 선택합니다. 완벽해서가 아니라, 연주할 때의 자신을 좋아하기 때문입니다. 그리고 ‘물음표 공책’이라는 이름 대신 ‘꿈의 공책’으로 제목을 바꿉니다. 방황했던 시간마저 자신을 알아가는 소중한 과정이었다는 것을 깨달았기 때문입니다.
+        </p>
+        <div class="quote-box">
+          “우리는 겨우 열한 살이잖아. 우리 하고 싶은 거 마음껏 해 보자. 진짜 꿈을 찾을 때까지.”
+        </div>
+        <p class="story-text">
+          『꿈의 공책』은 꿈을 정하지 못해 불안한 어린이, 부모님의 기대와 친구들의 시선 속에서 자기 마음을 놓치기 쉬운 어린이에게 다정한 응원을 건냅니다.
+        </p>
+      </div>
+      <!-- 추천 대상 -->
+      <div class="recommend-box">
+        <h3 class="recommend-title">이런 어린이에게 권합니다</h3>
+        <ul class="recommend-list">
+          <li>아직 장래 희망을 정하지 못해 불안한 어린이</li>
+          <li>잘하는 것과 좋아하는 것 사이에서 고민하는 어린이</li>
+          <li>부모님이나 친구의 기대 때문에 마음이 흔들리는 어린이</li>
+          <li>생각과 감정을 글로 정리해 보고 싶은 어린이</li>
+        </ul>
+      </div>
+      <!-- 푸터 정보 -->
+      <div class="info-footer">
+        <p style="font-size: 15px; font-weight: bold; color: #333; margin-bottom: 8px;">
+          “이제 내 공책에는 물음표가 없다. 내가 채워 갈 꿈들이 가득할 뿐이다.”
+        </p>
+        <p style="margin-bottom: 12px;">
+          나만의 공책을 채우며 참된 나를 발견하는 기쁨. 『꿈의 공책』이 어린이의 마음마다 따뜻한 등불을 켜 줄 거예요.
+        </p>
+        <p style="margin: 4px 0;"><strong>도서 정보:</strong> 어린이 · 초등 4~6학년 창작동화 · 인성 · 자기계발 · 진로</p>
+        <p style="margin: 0;"><strong>ISBN:</strong> 979-11-90295-39-0 73810</p>
+      </div>
+      <a href="https://www.yes24.com/product/goods/196677660" target="_blank" class="btn-aladin-link">
+        🛒 Yes24에서 온라인 도서 정보 보기 ↗
+      </a>
+    </div>
+  </div>
+</div>
+<!-- 📍 2. 우편번호 검색 모달 -->
+<div id="postcodeModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 460px; height: 80vh; max-height: 600px;">
+    <div class="modal-header-bar" style="background: #f8f9fa; color: #333; border-bottom: 1px solid #eee;">
+      <span>우편번호 검색</span>
+      <button type="button" class="modal-close-btn" style="color: #666;" onclick="closePostcodeModal()">&times;</button>
+    </div>
+    <div id="postcodeLayer" style="width: 100%; flex: 1;"></div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+  // GAS를 재배포한 경우 배포 화면의 웹 앱 URL로 바꾸세요.
+  const GAS_WEB_APP_URL = 'https://script.google.com/a/macros/cap89.com/s/AKfycbw2XU2Fnf3fdz_qgfd3DCTTQYe3rDctzNaRl4BBNqo-6lL1BejKHRXtTGgMLvniGlmeqw/exec';
+  let pendingSubmission = null;
+  let toastTimer;
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.hidden = true; }, 5000);
+  }
+  function showStatus(message, error = false) {
+    const status = document.getElementById('submitStatus');
+    status.textContent = message;
+    status.classList.toggle('error', error);
+    status.hidden = false;
+    if (error) showToast(message);
+  }
+
+  // 전화번호 자동 하이픈
+  const phoneInput = document.getElementById('phone');
+  phoneInput.addEventListener('input', function(e) {
+    let val = e.target.value.replace(/[^0-9]/g, '');
+    let formatted = '';
+    if (val.length < 4) {
+      formatted = val;
+    } else if (val.length < 7) {
+      formatted = val.substr(0, 3) + '-' + val.substr(3);
+    } else if (val.length < 11) {
+      formatted = val.substr(0, 3) + '-' + val.substr(3, 3) + '-' + val.substr(6);
+    } else {
+      formatted = val.substr(0, 3) + '-' + val.substr(3, 4) + '-' + val.substr(7, 4);
+    }
+    e.target.value = formatted;
+  });
+  // 호칭 선택
+  function handleHonorificChange(val) {
+    const customInput = document.getElementById('honorificCustom');
+    if (val === 'custom') {
+      customInput.style.display = 'block';
+      customInput.required = true;
+      customInput.focus();
+    } else {
+      customInput.style.display = 'none';
+      customInput.required = false;
+      customInput.value = '';
+    }
+  }
+  // 개인정보 동의 체크
+  const privacyCheckbox = document.getElementById('privacyAgree');
+  const submitBtn = document.getElementById('submitBtn');
+  privacyCheckbox.addEventListener('change', function() {
+    submitBtn.disabled = !!pendingSubmission || !this.checked;
+  });
+  // 📖 책 소개 상세 모달 제어
+  const bookModal = document.getElementById('bookDetailModal');
+  function openBookDetailModal() {
+    bookModal.style.display = 'flex';
+  }
+  function closeBookDetailModal() {
+    bookModal.style.display = 'none';
+  }
+  // 📍 우편번호 모달 제어
+  const postcodeModal = document.getElementById('postcodeModal');
+  const layer = document.getElementById('postcodeLayer');
+  function openPostcodeModal() {
+    if (!window.daum || !window.daum.Postcode) { showToast('주소 검색을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'); return; }
+    postcodeModal.style.display = 'flex';
+    new daum.Postcode({
+      oncomplete: function(data) {
+        document.getElementById('zipcode').value = data.zonecode;
+        document.getElementById('address').value = data.address;
+        closePostcodeModal();
+        document.getElementById('detailAddress').focus();
+      },
+      width: '100%',
+      height: '100%'
+    }).embed(layer);
+  }
+  function closePostcodeModal() {
+    postcodeModal.style.display = 'none';
+    layer.innerHTML = '';
+  }
+  // 모달 외부 클릭 시 닫기
+  window.addEventListener('click', function(e) {
+    if (e.target === bookModal) {
+      closeBookDetailModal();
+    }
+    if (e.target === postcodeModal) {
+      closePostcodeModal();
+    }
+  });
+  // Google 응답의 출처와 현재 요청 번호가 모두 일치할 때만 결과를 처리합니다.
+  window.addEventListener('message', function(event) {
+    if (!/^https:\/\/(?:script\.google\.com|script\.googleusercontent\.com|[a-z0-9-]+-script\.googleusercontent\.com)$/.test(event.origin)) return;
+    const result = event.data;
+    if (!pendingSubmission || !result || result.type !== 'BOOK_APPLICATION_RESULT' || result.requestId !== pendingSubmission.requestId) return;
+    clearTimeout(pendingSubmission.timer);
+    pendingSubmission.transport.remove();
+    pendingSubmission.frame.remove();
+    pendingSubmission = null;
+    submitBtn.innerText = '신청 제출하기';
+    if (result.success === true) {
+      document.getElementById('addressForm').reset();
+      handleHonorificChange('선생님');
+      submitBtn.disabled = true;
+      showStatus('신청이 완료되었습니다. 입력하신 주소로 도서를 보내드리겠습니다.');
+      showToast('신청이 완료되었습니다.');
+    } else {
+      submitBtn.disabled = !privacyCheckbox.checked;
+      showStatus(result.message || '저장하지 못했습니다. 입력 내용을 확인해 주세요.', true);
+    }
+  });
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') { closeBookDetailModal(); closePostcodeModal(); }
+  });
+  // 일반 POST 폼 + iframe 응답을 사용하여 다른 도메인에서도 저장 결과를 확인합니다.
+  document.getElementById('addressForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    if (pendingSubmission) return;
+    const form = document.getElementById('addressForm');
+    if (!privacyCheckbox.checked || !form.reportValidity()) return;
+    const selected = document.getElementById('honorificSelect').value;
+    const formData = {
+      name: document.getElementById('name').value.trim(),
+      honorific: selected === 'custom' ? document.getElementById('honorificCustom').value.trim() : selected,
+      phone: phoneInput.value.trim(),
+      zipcode: document.getElementById('zipcode').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      detailAddress: document.getElementById('detailAddress').value.trim(),
+      privacyAgree: true
+    };
+    if (Object.entries(formData).some(([key, value]) => key !== 'privacyAgree' && !value)) {
+      showToast('성함, 호칭, 연락처, 우편번호와 주소를 모두 입력해 주세요.'); return;
+    }
+    if (!/^\d{5}$/.test(formData.zipcode)) { showToast('우편번호 찾기로 주소를 선택해 주세요.'); return; }
+    if (!/^\d{9,11}$/.test(formData.phone.replace(/[^0-9]/g, ''))) { showToast('연락처를 확인해 주세요.'); phoneInput.focus(); return; }
+    if (location.protocol !== 'https:') { showToast('GitHub Pages의 HTTPS 주소에서 신청해 주세요.'); return; }
+    const random = new Uint8Array(16);
+    crypto.getRandomValues(random);
+    const requestId = Array.from(random, byte => byte.toString(16).padStart(2, '0')).join('');
+    const frame = document.createElement('iframe');
+    frame.name = 'book_response_' + requestId;
+    frame.hidden = true;
+    frame.title = '신청 처리 응답';
+    const transport = document.createElement('form');
+    transport.hidden = true;
+    transport.method = 'POST';
+    transport.action = GAS_WEB_APP_URL;
+    transport.target = frame.name;
+    const params = { action: 'saveAddress', payload: JSON.stringify(formData), requestId, replyOrigin: location.origin };
+    for (const [name, value] of Object.entries(params)) {
+      const input = document.createElement('input');
+      input.type = 'hidden'; input.name = name; input.value = value;
+      transport.appendChild(input);
+    }
+    document.body.append(frame, transport);
+    pendingSubmission = { requestId, frame, transport, timer: null };
+    submitBtn.disabled = true;
+    submitBtn.innerText = '제출 중…';
+    showStatus('신청 내용을 저장하고 있습니다. 잠시 기다려 주세요.');
+    pendingSubmission.timer = setTimeout(() => {
+      // 서버에서는 이미 저장되었을 수 있으므로 자동 재전송하지 않습니다.
+      submitBtn.innerText = '저장 확인 필요';
+      showStatus('저장 결과를 확인하지 못했습니다. 중복 신청을 피하려면 담당자에게 접수 여부를 확인해 주세요. 입력 내용은 유지됩니다.', true);
+    }, 60000);
+    try { transport.submit(); }
+    catch (error) {
+      clearTimeout(pendingSubmission.timer); frame.remove(); transport.remove(); pendingSubmission = null;
+      submitBtn.disabled = !privacyCheckbox.checked; submitBtn.innerText = '신청 제출하기';
+      showStatus('전송을 시작하지 못했습니다. 다시 시도해 주세요.', true);
+    }
+  });
+</script>
+</body>
+</html>
