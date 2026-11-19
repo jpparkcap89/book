@@ -1,0 +1,266 @@
+/* =========================================================
+   Lucian UX/UI Prompt 요소 — MIT License (c) 2026 Seokwoooo
+   https://lucianlabs.dev/uxui-prompt/
+   각 요소의 CSS를 그대로 옮기고, 데모용 고정 크기만 페이지에 맞게 풀었습니다.
+   색은 style.css에서 --ux-* 토큰을 cap89 팔레트로 연결합니다.
+   ========================================================= */
+
+/* 공통 베이스 (tokens.css) */
+.ux,.ux *,.ux *::before,.ux *::after{box-sizing:border-box}
+.ux{
+  font-family:var(--font);
+  color:var(--ux-ink);-webkit-font-smoothing:antialiased;letter-spacing:-.01em;
+  -webkit-tap-highlight-color:transparent;
+  word-break:keep-all;overflow-wrap:break-word;
+}
+:where(.ux) :is(button,input,textarea,select){font:inherit;color:inherit}
+:where(.ux) button{cursor:pointer}
+.ux :focus-visible{outline:2px solid var(--ux-accent);outline-offset:3px}
+.ux [hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){
+  .ux,.ux *,.ux *::before,.ux *::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important;
+  }
+}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #039 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#039
+   미끄러지는 알약 탭 → PC 상단 메뉴 탭
+   --------------------------------------------------------- */
+.u039{position:relative}
+.u039-tabs{position:relative;display:flex;padding:5px;border-radius:999px;background:var(--ux-surface);box-shadow:0 0 0 1px var(--ux-line)}
+.u039-pill{position:absolute;left:0;top:5px;bottom:5px;width:var(--w,80px);border-radius:999px;background:var(--ux-ink);transform:translateX(var(--x,5px));box-shadow:0 8px 16px -10px var(--ux-shadow-strong);transition:transform .5s var(--ux-spring),width .5s var(--ux-spring)}
+.u039-tab{position:relative;flex:1;height:42px;border:0;padding:0 16px;border-radius:999px;background:none;font-size:14px;font-weight:680;color:var(--ux-ink-2);white-space:nowrap;transition:color .35s var(--ux-ease)}
+.u039-tab[aria-selected="true"]{color:var(--ux-page)}
+.u039-tab:focus-visible{outline:2px solid var(--ux-accent);outline-offset:2px}
+/* 패널 전환: 원본 목록 줄의 이동 값(.55s 스프링, .35s 페이드)을 페이지 패널에 씁니다 */
+.u039-enter{transition:transform .55s var(--ux-spring),opacity .35s var(--ux-ease)}
+@media (max-width:899px){.u039.nav-tabs{display:none}}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #242 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#242
+   스크롤 따라 넘어가는 카테고리 칩 바 → 휴대폰 메뉴
+   --------------------------------------------------------- */
+.u242{position:relative;color:var(--ux-ink)}
+.u242-cb{position:relative;z-index:2;background:transparent;transition:box-shadow .25s}
+.u242-cb.is-stuck{box-shadow:0 8px 16px -12px var(--ux-shadow-strong)}
+.u242-cr{position:relative;display:flex;gap:4px;padding:6px 14px 8px;overflow-x:auto;scrollbar-width:none}
+.u242-cr::-webkit-scrollbar{display:none}
+.u242-ch{flex:none;height:34px;padding:0 13px;border:0;border-radius:999px;background:none;color:var(--ux-ink-3);font:inherit;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap;transition:color .2s}
+.u242-ch[aria-current="true"]{color:var(--ux-ink)}
+.u242-ch:focus-visible{outline:2px solid var(--ux-accent);outline-offset:-2px}
+.u242-ul{position:absolute;left:0;bottom:8px;height:34px;border-radius:999px;background:var(--ux-surface);box-shadow:inset 0 0 0 1px var(--ux-line),0 4px 10px -6px var(--ux-shadow-strong);transition:transform .35s cubic-bezier(.3,1.2,.5,1),width .35s cubic-bezier(.3,1.2,.5,1);z-index:-1}
+.u242-cr>.u242-ch{position:relative;z-index:1}
+@media (prefers-reduced-motion: reduce){.u242-ul,.u242-cb{transition:none}}
+@media (min-width:900px){.u242.nav-chips{display:none}}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #252 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#252
+   반짝 지나가며 펼쳐지는 공지 알약 → 히어로 위 접수 상태 알약
+   (글자 크기를 읽기 좋게 조금 키웠습니다)
+   --------------------------------------------------------- */
+.u252{position:relative;display:inline-block;width:min(360px,100%);z-index:6;color:var(--ux-ink);text-align:left}
+.u252-wr{position:relative;width:100%}
+.u252-pl{position:relative;display:flex;align-items:center;gap:8px;width:100%;height:40px;padding:0 12px 0 5px;border:0;border-radius:999px;background:rgba(255,255,255,.78);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(59,99,246,.14),0 6px 16px -10px var(--ux-shadow-strong);font:inherit;color:var(--ux-ink);cursor:pointer;overflow:hidden;transition:box-shadow .25s,border-radius .35s}
+.u252-pl:hover,.u252-pl.g-hov{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ux-accent) 60%,transparent),0 8px 22px -10px var(--ux-accent)}
+.u252-pl:focus-visible{outline:2px solid var(--ux-accent);outline-offset:3px}
+.u252-pl::after{content:"";position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-18deg);pointer-events:none}
+.u252.is-shine .u252-pl::after{animation:u252-sh .9s ease-in-out}
+@keyframes u252-sh{to{left:120%}}
+.u252-tg{flex:none;height:30px;padding:0 11px;border-radius:999px;background:var(--ux-grad);color:var(--ux-accent-ink);font-size:12.5px;font-weight:900;display:grid;place-items:center}
+.u252-rl{flex:1;height:20px;overflow:hidden;text-align:left}
+.u252-rs{display:block;transition:transform .5s cubic-bezier(.3,1.2,.5,1)}
+.u252-rs span{display:block;height:20px;line-height:20px;font-size:14px;font-weight:750;color:var(--ux-accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u252-ar{flex:none;width:14px;height:14px;color:var(--ux-ink-3);transition:transform .3s cubic-bezier(.3,1.6,.5,1),color .25s}
+.u252-pl:hover .u252-ar,.u252-pl.g-hov .u252-ar{transform:translateX(3px);color:var(--ux-accent)}
+.u252.is-open .u252-ar{transform:rotate(90deg);color:var(--ux-accent)}
+.u252-pn{position:absolute;left:0;right:0;top:100%;margin-top:6px;border-radius:18px;background:var(--ux-surface);box-shadow:0 0 0 1px var(--ux-line),0 18px 40px -18px var(--ux-shadow-strong);padding:0 16px;max-height:0;opacity:0;overflow:hidden;transition:max-height .45s cubic-bezier(.2,.9,.3,1),opacity .25s,padding .35s}
+.u252.is-open .u252-pn{max-height:260px;opacity:1;padding:12px 16px}
+.u252-pn h4{margin:0 0 6px;display:flex;justify-content:space-between;font-size:12.5px;font-weight:850;color:var(--ux-ink-3)}
+.u252-pn h4 a{color:var(--ux-accent);text-decoration:none}
+.u252-it{display:grid;grid-template-columns:48px 1fr;gap:8px;padding:8px 0;border-top:1px solid var(--ux-line);opacity:0;transform:translateY(-6px);transition:opacity .3s,transform .4s cubic-bezier(.3,1.3,.5,1)}
+.u252.is-open .u252-it{opacity:1;transform:none}
+.u252-it time{font-size:12px;font-weight:800;color:var(--ux-ink-3);font-variant-numeric:tabular-nums;padding-top:1px}
+.u252-it b{display:block;font-size:14px;font-weight:850}
+.u252-it span{font-size:12.5px;font-weight:600;color:var(--ux-ink-2)}
+@media (prefers-reduced-motion: reduce){.u252.is-shine .u252-pl::after{animation:none}.u252-rs,.u252-pn,.u252-it{transition:none}}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #251 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#251
+   스크롤하면 차례로 떠오르는 기능 카드 → 참여 방법 카드, 섹션 제목 밑줄
+   --------------------------------------------------------- */
+.u251-gd{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.u251-cd{opacity:0;transform:translateY(26px) scale(.97);transition:opacity .5s,transform .7s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s)}
+.u251-cd.is-in{opacity:1;transform:none}
+.u251-ic{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:24px;margin-bottom:12px;background:var(--c,var(--ux-accent-soft));transform:scale(.4);transition:transform .55s cubic-bezier(.3,1.7,.5,1);transition-delay:calc(var(--d,0s) + .18s)}
+.u251-cd.is-in .u251-ic{transform:none}
+.u251-hd h2{position:relative;display:inline-block}
+.u251-hd h2::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:7px;border-radius:4px;background:color-mix(in srgb,var(--ux-accent) 25%,transparent);transform:scaleX(0);transform-origin:0 50%;transition:transform .8s cubic-bezier(.2,.8,.2,1) .2s;z-index:-1}
+.u251-hd.is-in h2::after{transform:none}
+@media (max-width:820px){.u251-gd{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){.u251-cd,.u251-ic,.u251-hd h2::after{transition:none;opacity:1;transform:none}}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #032 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#032
+   끌어다 놓는 업로드 → 작품 파일 올리기 (한 개, 실제 읽기 진행률)
+   --------------------------------------------------------- */
+.u032{position:relative;width:100%}
+.u032-zone{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:176px;border:0;padding:0 16px;border-radius:26px;background:var(--ux-surface);color:var(--ux-ink);cursor:pointer;text-align:center;
+  transition:transform .5s var(--ux-spring),background-color .3s var(--ux-ease)}
+.u032-zone:focus-visible{outline:2px solid var(--ux-accent);outline-offset:4px}
+.u032-zone svg.u032-dash{position:absolute;left:1px;top:1px;width:calc(100% - 2px);height:calc(100% - 2px);overflow:visible;pointer-events:none}
+.u032-dash rect{fill:none;stroke:var(--ux-line-2);stroke-width:2;stroke-dasharray:8 7;transition:stroke .3s var(--ux-ease)}
+.u032-zone:hover .u032-dash rect,.u032.is-over .u032-dash rect{stroke:var(--ux-accent);animation:u032-march .9s linear infinite}
+@keyframes u032-march{to{stroke-dashoffset:-30}}
+.u032.is-over .u032-zone{transform:scale(1.03);background:color-mix(in srgb,var(--ux-accent) 7%,var(--ux-surface))}
+.u032-orb{width:60px;height:60px;border-radius:20px;display:grid;place-items:center;color:#fff;background:linear-gradient(140deg,#3b63f6,#8e9cff);box-shadow:0 16px 28px -14px rgba(59,99,246,.8);transition:transform .5s var(--ux-spring)}
+.u032-orb svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.u032-zone:hover .u032-orb{transform:translateY(-4px)}
+.u032.is-over .u032-orb{transform:translateY(-8px) scale(1.1) rotate(-6deg)}
+.u032-zone b{margin-top:14px;font-size:15.5px;font-weight:720;letter-spacing:-.02em}
+.u032-zone b em{font-style:normal;color:var(--ux-accent)}
+.u032-zone small{margin-top:4px;font-size:12.5px;color:var(--ux-ink-3)}
+.u032-file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.u032-list{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.u032-list:empty{display:none}
+.u032-row{position:relative;display:flex;align-items:center;gap:12px;height:62px;padding:0 12px;border-radius:18px;background:var(--ux-surface);box-shadow:0 0 0 1px var(--ux-line);overflow:hidden;animation:u032-in .5s var(--ux-spring)}
+@keyframes u032-in{from{transform:translateY(-10px) scale(.96);opacity:0}}
+.u032-ic{width:36px;height:40px;flex:none;border-radius:9px;display:grid;place-items:end center;padding-bottom:5px;font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#fff;background:var(--c)}
+.u032-meta{flex:1;min-width:0}
+.u032-meta b{display:block;font-size:14px;font-weight:660;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u032-meta small{display:block;margin-top:3px;font-size:12px;color:var(--ux-ink-3);font-variant-numeric:tabular-nums}
+.u032-bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--ux-accent);transform-origin:0 50%;transform:scaleX(var(--p,0));transition:transform .2s linear,background-color .3s,opacity .5s .4s}
+.u032-row.done .u032-bar{background:var(--ux-mint);opacity:0}
+.u032-row.fail .u032-bar{background:var(--ux-danger)}
+.u032-st{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center}
+.u032-st svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.u032-row.done .u032-st{background:var(--ux-mint);color:var(--ux-accent-ink);animation:u032-pop .45s var(--ux-spring)}
+@keyframes u032-pop{from{transform:scale(.3)}}
+.u032-row.done .u032-st path{stroke-dasharray:16;stroke-dashoffset:16;animation:u032-draw .4s var(--ux-ease) .15s forwards}
+@keyframes u032-draw{to{stroke-dashoffset:0}}
+.u032-row.fail .u032-meta small{color:var(--ux-danger)}
+.u032-retry{height:32px;padding:0 12px;border:0;border-radius:10px;background:color-mix(in srgb,var(--ux-danger) 12%,transparent);color:var(--ux-danger);font-size:12.5px;font-weight:700;white-space:nowrap}
+.u032-retry:focus-visible{outline:2px solid var(--ux-danger);outline-offset:2px}
+.u032-spin{width:20px;height:20px;border-radius:50%;border:2.5px solid var(--ux-surface-3);border-top-color:var(--ux-accent);animation:u032-rot .8s linear infinite}
+@keyframes u032-rot{to{transform:rotate(360deg)}}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #068 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#068
+   끝까지 읽고 동의하는 약관 → 개인정보·사용권·창작 서약 동의
+   --------------------------------------------------------- */
+.u068{position:relative;width:100%;display:flex;flex-direction:column;padding:22px 20px 14px;border-radius:26px;background:var(--ux-surface);box-shadow:0 0 0 1px var(--ux-line),0 30px 60px -36px var(--ux-shadow-strong)}
+.u068 h3{margin:0;font-size:19px;font-weight:850;letter-spacing:-.045em}
+.u068-doc{position:relative;height:240px;margin-top:12px;border-radius:18px;background:var(--ux-surface-2);overflow:hidden}
+.u068-doc::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:3px;background:var(--ux-grad);transform-origin:0 50%;transform:scaleX(var(--p,0))}
+.u068-txt{height:100%;overflow-y:auto;padding:14px 16px;font-size:13.5px;line-height:1.65;color:var(--ux-ink-2);overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--ux-line-2) transparent}
+.u068-txt:focus-visible{outline:2px solid var(--ux-accent);outline-offset:-3px;border-radius:18px}
+.u068-txt b.h{display:block;margin:16px 0 4px;font-size:14px;color:var(--ux-ink)}
+.u068-txt b.h:first-child{margin-top:0}
+.u068-txt p{margin:0 0 6px}
+.u068-txt table{width:100%;border-collapse:collapse;margin:6px 0;font-size:13px;background:var(--ux-surface)}
+.u068-txt th,.u068-txt td{border:1px solid var(--ux-line-2);padding:6px 8px;text-align:left;vertical-align:top}
+.u068-txt th{width:30%;color:var(--ux-ink);font-weight:750}
+.u068-read{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;font-weight:700;color:var(--ux-ink-3);transition:color .3s}
+.u068-read i{width:8px;height:8px;border-radius:50%;background:var(--ux-line-2);transition:background-color .3s,transform .4s var(--ux-spring)}
+.u068.is-read .u068-read{color:var(--ux-mint)}
+.u068.is-read .u068-read i{background:var(--ux-mint);transform:scale(1.3)}
+.u068-list{margin:12px 0 0;padding:0;list-style:none}
+.u068-c{position:relative;display:flex;align-items:center;gap:12px;min-height:46px;padding:0 4px;border-radius:12px;cursor:pointer;font-size:15px;font-weight:650;color:var(--ux-ink-2);transition:opacity .3s}
+.u068-c.all{min-height:54px;padding:0 14px;margin-bottom:6px;border-radius:16px;background:var(--ux-surface-2);font-size:15.5px;font-weight:780;color:var(--ux-ink)}
+.u068-c input{position:absolute;opacity:0;pointer-events:none}
+.u068-c:has(input:disabled){opacity:.45;cursor:not-allowed}
+.u068-c:has(input:focus-visible) .u068-box{outline:2px solid var(--ux-accent);outline-offset:2px}
+.u068-box{position:relative;width:24px;height:24px;flex:none;border-radius:8px;box-shadow:inset 0 0 0 2px var(--ux-line-2);transition:background-color .25s,box-shadow .25s,transform .35s var(--ux-spring)}
+.u068-box svg{position:absolute;inset:3px;width:18px;height:18px;fill:none;stroke:var(--ux-accent-ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.u068-box path{stroke-dasharray:18;stroke-dashoffset:18;transition:stroke-dashoffset .3s var(--ux-ease) .05s}
+.u068-c:has(input:checked) .u068-box{background:var(--ux-accent);box-shadow:none;animation:u068-pop .4s var(--ux-spring)}
+.u068-c:has(input:checked) .u068-box path{stroke-dashoffset:0}
+@keyframes u068-pop{40%{transform:scale(1.18)}}
+.u068-c em{margin-left:auto;font-style:normal;font-size:12px;font-weight:800;color:var(--ux-ink-3)}
+.u068-c em.req{color:var(--ux-accent)}
+.u068-lock{width:14px;height:14px;margin-left:-6px;fill:none;stroke:currentColor;stroke-width:2;transition:opacity .3s,transform .4s var(--ux-spring)}
+.u068.is-read .u068-lock{opacity:0;transform:scale(0)}
+body.admin .u068-txt [data-edit] .edit-pen{top:2px;right:2px}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #062 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#062
+   로그인 카드 피드백 → 관리자 로그인
+   --------------------------------------------------------- */
+.u062{position:relative;width:min(360px,calc(100vw - 32px));height:400px;border-radius:30px;background:var(--ux-surface);box-shadow:0 0 0 1px var(--ux-line),0 30px 60px -36px var(--ux-shadow-strong);overflow:hidden}
+.u062.shake{animation:u062-no .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes u062-no{15%{transform:translateX(-9px) rotate(-.6deg)}30%{transform:translateX(8px) rotate(.5deg)}45%{transform:translateX(-6px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+.u062-pane{position:absolute;inset:0;padding:30px 26px 26px;display:flex;flex-direction:column;transition:transform .6s var(--ux-ease),opacity .4s}
+.u062-logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#3b63f6,#8e9cff);box-shadow:0 10px 20px -10px rgba(59,99,246,.6);display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px}
+.u062-pane h3{margin:18px 0 4px;font-size:24px;font-weight:850;letter-spacing:-.045em}
+.u062-pane>p{margin:0 0 22px;font-size:13.5px;color:var(--ux-ink-3)}
+.u062-f{position:relative;margin-bottom:12px}
+.u062-f label{display:block;margin-bottom:6px;font-size:12.5px;font-weight:700;color:var(--ux-ink-2)}
+.u062-box{position:relative;display:flex;align-items:center;height:52px;border-radius:15px;background:var(--ux-surface-2);box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .25s,background-color .25s}
+.u062-box:focus-within{background:var(--ux-surface);box-shadow:inset 0 0 0 1.5px var(--ux-accent),0 0 0 4px var(--ux-accent-soft)}
+.u062-f.bad .u062-box{box-shadow:inset 0 0 0 1.5px var(--ux-danger);background:color-mix(in srgb,var(--ux-danger) 6%,var(--ux-surface))}
+.u062-box input{flex:1;min-width:0;height:100%;border:0;padding:0 16px;background:none;font-size:15px;font-weight:600;color:var(--ux-ink);outline:none}
+.u062-box input:focus-visible{outline:none}
+.u062-box input::placeholder{color:var(--ux-ink-3);font-weight:500}
+.u062-eye{width:44px;height:44px;margin-right:4px;border:0;padding:0;border-radius:12px;display:grid;place-items:center;background:none;color:var(--ux-ink-3);transition:color .2s}
+.u062-eye:hover{color:var(--ux-ink)}
+.u062-eye:focus-visible{outline:2px solid var(--ux-accent);outline-offset:-4px}
+.u062-eye svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.u062-lid{transform-origin:12px 12px;transition:transform .35s var(--ux-spring)}
+.u062-eye[aria-pressed="false"] .u062-lid{transform:scaleY(.5)}
+.u062-slash{stroke-dasharray:24;stroke-dashoffset:0;transition:stroke-dashoffset .35s var(--ux-ease)}
+.u062-eye[aria-pressed="true"] .u062-slash{stroke-dashoffset:24}
+.u062-caps{position:absolute;right:0;top:0;font-size:11.5px;font-weight:800;color:var(--ux-warn);opacity:0;transition:opacity .2s}
+.u062-caps.on{opacity:1}
+.u062-err{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--ux-ease)}
+.u062-err>span{overflow:hidden;min-height:0;font-size:12.5px;font-weight:650;color:var(--ux-danger)}
+.u062-err>span::before{content:"";display:block;height:7px}
+.u062-f.bad .u062-err{grid-template-rows:1fr}
+.u062-row{display:flex;justify-content:space-between;align-items:center;margin:-2px 0 0;font-size:12.5px;color:var(--ux-ink-3)}
+.u062-row button{border:0;background:none;padding:6px 0;font-size:12.5px;font-weight:700;color:var(--ux-accent)}
+.u062-go{position:relative;align-self:center;width:100%;height:54px;margin-top:auto;border:0;border-radius:17px;background:var(--ux-ink);color:var(--ux-page);font-size:15.5px;font-weight:760;overflow:hidden;transition:width .45s var(--ux-spring),border-radius .45s var(--ux-spring),background-color .4s,transform .3s var(--ux-spring)}
+.u062-go:active{transform:scale(.97)}
+.u062-go:focus-visible{outline:2px solid var(--ux-accent);outline-offset:3px}
+.u062-go span{transition:opacity .2s}
+.u062-go i{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;opacity:0;animation:u062-spin .7s linear infinite}
+.u062-go svg{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.u062-go svg path{stroke-dasharray:26;stroke-dashoffset:26;transition:stroke-dashoffset .4s var(--ux-ease) .1s}
+.u062-go.busy,.u062-go.ok{width:54px;border-radius:27px}
+.u062-go.busy span,.u062-go.ok span{opacity:0}
+.u062-go.busy i{opacity:1}
+.u062-go.ok{background:var(--ux-mint);color:var(--ux-accent-ink)}
+.u062-go.ok svg path{stroke-dashoffset:0}
+@keyframes u062-spin{to{transform:rotate(360deg)}}
+.u062-hi{transform:translateX(100%);opacity:0;align-items:center;justify-content:center;text-align:center}
+.u062.is-in .u062-login{transform:translateX(-30%);opacity:0;pointer-events:none}
+.u062.is-in .u062-hi{transform:none;opacity:1}
+.u062-av{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;font-size:40px;background:radial-gradient(circle at 38% 32%,#fff3d6,#ffcf70 45%,#f59e0b);box-shadow:0 0 0 6px var(--ux-surface),0 0 0 8px var(--ux-mint)}
+.u062-hi h3{margin-top:22px}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #070 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#070
+   겹쳐 쌓이는 토스트 → 페이지 알림 (오른쪽 아래 고정)
+   --------------------------------------------------------- */
+.u070{position:fixed;right:20px;bottom:20px;z-index:60;width:min(350px,calc(100vw - 32px));height:0}
+.u070-zone{position:absolute;left:0;right:0;bottom:0;height:300px;outline:none;pointer-events:none}
+.u070-t{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;min-height:68px;padding:12px 12px 12px 14px;border-radius:20px;background:var(--ux-surface);box-shadow:0 0 0 1px var(--ux-line),0 16px 30px -18px var(--ux-shadow-strong);transform-origin:50% 100%;transform:translate(var(--dx,0px),var(--y,0px)) scale(var(--s,1));opacity:var(--o,1);transition:transform .5s var(--ux-spring),opacity .35s;touch-action:pan-y;user-select:none;-webkit-user-select:none;pointer-events:auto}
+.u070-t.drag{transition:none}
+.u070-t.enter{transform:translateY(90px) scale(.9);opacity:0}
+.u070-t.leave{transform:translate(var(--dx,0px),var(--y,0px)) scale(var(--s,1));opacity:0;pointer-events:none}
+.u070-t.leave.side{transform:translate(calc(var(--dir,1) * 420px),var(--y,0px)) rotate(calc(var(--dir,1) * 8deg))}
+.u070-t>*{transition:opacity .25s}
+.u070-t.back>*{opacity:0}
+.u070-ic{width:36px;height:36px;flex:none;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c)}
+.u070-ic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.u070-ic i{width:18px;height:18px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;animation:u070-spin .7s linear infinite}
+@keyframes u070-spin{to{transform:rotate(360deg)}}
+.u070-tx{flex:1;min-width:0}
+.u070-tx b{display:block;font-size:14px;font-weight:780;letter-spacing:-.02em}
+.u070-tx small{display:block;margin-top:2px;font-size:12.5px;font-weight:600;color:var(--ux-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u070-x{width:30px;height:30px;flex:none;border:0;padding:0;border-radius:50%;display:grid;place-items:center;background:none;color:var(--ux-ink-3)}
+.u070-x:hover{background:var(--ux-surface-2);color:var(--ux-ink)}
+.u070-x svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.u070-x:focus-visible{outline:2px solid var(--ux-accent);outline-offset:1px}
+.u070-bar{position:absolute;left:16px;right:16px;bottom:0;height:2px;border-radius:2px;background:var(--c);opacity:.5;transform-origin:0 50%;transform:scaleX(var(--left,1))}
+.u070-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:520px){.u070{right:16px;bottom:16px}}

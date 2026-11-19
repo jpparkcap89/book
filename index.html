@@ -7,125 +7,143 @@
   <meta name="description" content="숲속동화문학회 추천 도서 25권 중 1권을 읽고 독후감을 써 보세요. 전국 초등학생 누구나 참여할 수 있습니다. 접수 2026.12.10 ~ 2027.1.20 16시.">
   <meta property="og:title" content="제15회 전국어린이독후감쓰기 대회">
   <meta property="og:description" content="책 속 숲길을 걷고, 나만의 생각을 글로 남겨 보아요! 전국 초등학생 누구나 · 상장 받는 친구 37명">
-  <meta property="og:image" content="https://book.cap89.com/covers/07.jpg">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/lucian.css">
 </head>
 <body>
+<div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
 
-<div class="adminbar">
-  <div class="wrap">
-    <span>✏️ 관리자 모드 — 점선으로 표시된 곳의 연필을 눌러 내용을 고칠 수 있습니다.</span>
-    <span style="display:flex;gap:8px">
-      <a href="#entries">접수 목록</a>
+<header class="site-head" id="siteHead">
+  <div class="adminbar">
+    <div class="wrap">
+      <span>✏️ 관리자 모드<span class="admin-more"> · 점선 안의 연필을 눌러 내용을 고칠 수 있습니다.</span></span>
       <button type="button" id="logoutBtn">로그아웃</button>
-    </span>
+    </div>
   </div>
-</div>
+  <div class="wrap head-row">
+    <a class="brand" href="#guide" data-nav="guide"><span class="brand-mark" aria-hidden="true">숲</span><span>숲속 독후감대회</span></a>
 
-<header class="topbar">
-  <div class="wrap">
-    <a class="brand" href="#top">📚 숲속 독후감대회</a>
-    <nav class="topnav">
-      <a href="#guide">대회 안내</a>
-      <a href="#books">대상 도서</a>
-      <a href="#awards">시상</a>
-      <a class="cta" href="#apply">접수하기</a>
-    </nav>
+    <!-- Lucian UX/UI Prompt #039 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#039 -->
+    <div class="ux u039 nav-tabs">
+      <div class="u039-tabs" role="tablist" aria-label="대회 메뉴">
+        <span class="u039-pill" aria-hidden="true"></span>
+        <button class="u039-tab" type="button" role="tab" data-target="guide">🏠 대회 안내</button>
+        <button class="u039-tab" type="button" role="tab" data-target="books">📚 대상 도서</button>
+        <button class="u039-tab" type="button" role="tab" data-target="awards">🏆 시상·유의사항</button>
+        <button class="u039-tab" type="button" role="tab" data-target="apply">✍️ 접수하기</button>
+        <button class="u039-tab" type="button" role="tab" data-target="entries" data-admin hidden>📋 접수 목록</button>
+      </div>
+    </div>
+
+    <a class="btn primary small head-cta" href="#apply" data-nav="apply">접수하기</a>
+  </div>
+
+  <!-- Lucian UX/UI Prompt #242 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#242 -->
+  <div class="ux u242 nav-chips">
+    <div class="u242-cb">
+      <nav class="u242-cr" aria-label="대회 메뉴">
+        <span class="u242-ul" aria-hidden="true"></span>
+        <button class="u242-ch" type="button" data-target="guide">대회 안내</button>
+        <button class="u242-ch" type="button" data-target="books">대상 도서</button>
+        <button class="u242-ch" type="button" data-target="awards">시상·유의사항</button>
+        <button class="u242-ch" type="button" data-target="apply">접수하기</button>
+        <button class="u242-ch" type="button" data-target="entries" data-admin hidden>접수 목록</button>
+      </nav>
+    </div>
   </div>
 </header>
 
-<main id="top">
-  <!-- ===== 히어로 ===== -->
-  <section class="hero">
-    <svg class="bg" viewBox="0 0 794 220" preserveAspectRatio="none" aria-hidden="true">
-      <circle cx="700" cy="40" r="30" fill="#ffd95a"/>
-      <path d="M0 140 Q200 90 400 130 T794 115 V220 H0Z" fill="#a8d88a"/>
-      <path d="M0 170 Q220 135 420 175 T794 160 V220 H0Z" fill="#7bb661"/>
-      <rect x="52" y="110" width="10" height="50" fill="#8a5a3b"/>
-      <circle cx="57" cy="96" r="30" fill="#3f8a4a"/><circle cx="38" cy="112" r="20" fill="#4f9d58"/>
-      <rect x="730" y="105" width="10" height="55" fill="#8a5a3b"/>
-      <path d="M735 40 L772 118 H698Z" fill="#2f6b3a"/><path d="M735 66 L778 138 H692Z" fill="#3f8a4a"/>
-    </svg>
-    <div class="wrap inner">
-      <span class="badge" data-edit="hero.badge">제15회</span>
-      <h1><span class="sm">전국어린이</span><span class="lg">독후감쓰기 대회</span></h1>
-      <p class="sub" data-edit="hero.sub">책 속 숲길을 걷고, 나만의 생각을 글로 남겨 보아요!</p>
-      <div class="status-pill soon" id="statusPill"><span class="dot"></span><span id="statusText">접수 기간을 확인하고 있어요</span></div>
+<main>
+  <!-- ================= 대회 안내 ================= -->
+  <section class="panel" id="guide" aria-label="대회 안내">
+    <div class="wrap">
+      <div class="hero">
+        <!-- Lucian UX/UI Prompt #252 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#252 -->
+        <div class="ux u252" id="notice">
+          <div class="u252-wr">
+            <button type="button" class="u252-pl" aria-expanded="false"><span class="u252-tg" id="noticeTag">접수 예정</span><span class="u252-rl"><span class="u252-rs"></span></span><svg class="u252-ar" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7h8M7.5 3.5 11 7l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="u252-pn"><h4><span>주요 일정</span><a href="#apply" data-nav="apply">접수하기 →</a></h4></div>
+          </div>
+        </div>
 
-      <div class="promo landscape" id="promo">
-        <video id="promoVideo" autoplay muted loop playsinline preload="metadata" aria-label="대회 홍보 영상"></video>
-        <button type="button" class="sound" id="soundBtn">🔇 소리 켜기</button>
+        <h1 class="hero-title"><span data-edit="hero.line1">제15회 전국어린이</span><span class="grad">독후감쓰기 대회</span></h1>
+        <p class="hero-sub" data-edit="hero.sub">책 속 숲길을 걷고, <strong>나만의 생각을 글로</strong> 남겨 보아요!</p>
+
+        <div class="promo landscape" id="promo">
+          <video id="promoVideo" autoplay muted loop playsinline preload="metadata" aria-label="대회 홍보 영상"></video>
+          <button type="button" class="sound" id="soundBtn">🔇 소리 켜기</button>
+        </div>
+
+        <div class="actions">
+          <a class="btn primary" href="#apply" data-nav="apply">✍️ 지금 접수하기</a>
+          <a class="btn ghost" href="#books" data-nav="books">📚 대상 도서 보기</a>
+        </div>
       </div>
 
-      <div class="actions">
-        <a class="btn primary" href="#apply">✍️ 지금 접수하기</a>
-        <a class="btn ghost" href="#books">📖 대상 도서 보기</a>
+      <div class="keys">
+        <div class="tile key"><div class="k">📅 접수기간</div><div class="v" data-edit="key.period">2026. 12. 10.(목) ~<br>2027. 1. 20.(수) 16시</div></div>
+        <div class="tile key"><div class="k">🙋 참가대상</div><div class="v" data-edit="key.target">전국 초등학생<small>누구나 참여 가능</small></div></div>
+        <div class="tile key"><div class="k">🏆 수상자 발표</div><div class="v" data-edit="key.announce">2027. 2. 4.(목)<small>16:00</small></div></div>
+      </div>
+
+      <!-- Lucian UX/UI Prompt #251 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#251 -->
+      <div class="ux u251">
+        <div class="sec-head u251-hd" data-rv><span class="eyebrow">HOW TO</span><h2>🧭 이렇게 참여해요</h2></div>
+        <div class="u251-gd">
+          <div class="glass u251-cd" data-rv style="--d:0s">
+            <div class="u251-ic" style="--c:rgba(255,207,112,.45)" aria-hidden="true">📖</div>
+            <h3>대상 도서</h3>
+            <div data-edit="guide.books"><p>숲속동화문학회 추천 도서 <span class="hl">25권 중 1권을 자유롭게 골라</span> 읽고 독후감을 씁니다.</p></div>
+          </div>
+          <div class="glass u251-cd" data-rv style="--d:.09s">
+            <div class="u251-ic" style="--c:rgba(127,216,201,.45)" aria-hidden="true">📝</div>
+            <h3>출품 양식</h3>
+            <div data-edit="guide.format">
+              <p><strong>한글(HWP) 문서</strong>로 작성해서 올려 주세요.</p>
+              <div class="chips"><span class="chip">바탕체</span><span class="chip">12포인트</span><span class="chip">줄간격 160</span><span class="chip">A4 2매 이내</span></div>
+              <p class="muted">파일 제목: <strong>지역_학교명_학생명_도서명</strong> · 접수하면 이 형식으로 자동 저장됩니다.</p>
+            </div>
+          </div>
+          <div class="glass u251-cd" data-rv style="--d:0s">
+            <div class="u251-ic" style="--c:rgba(59,99,246,.14)" aria-hidden="true">📮</div>
+            <h3>접수 방법</h3>
+            <div data-edit="guide.apply">
+              <p>이 페이지의 <strong>온라인 접수</strong>에서 보호자가 정보를 입력하고 작품 파일을 올리면 끝!</p>
+              <p class="note-warn">※ 2027년 1월 20일(수) 16시 이후에는 접수할 수 없습니다.</p>
+            </div>
+          </div>
+          <div class="glass u251-cd" data-rv style="--d:.09s">
+            <div class="u251-ic" style="--c:rgba(255,159,181,.4)" aria-hidden="true">🎉</div>
+            <h3>발표 및 시상</h3>
+            <div data-edit="guide.schedule">
+              <ul>
+                <li><strong>수상자 발표</strong> 2027년 2월 4일(목) 16:00<br><span class="muted">숲속동화문학회 카페 공지 및 수상자 개별 문자 연락</span></li>
+                <li><strong>시상식</strong> 2027년 2월 27일(토)<br><span class="muted">시간 및 장소는 추후 안내</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== 핵심 정보 ===== -->
-  <div class="wrap">
-    <div class="keys" id="guide">
-      <div class="key"><div class="k">📅 접수기간</div><div class="v" data-edit="key.period">2026. 12. 10.(목) ~<br>2027. 1. 20.(수) 16시</div></div>
-      <div class="key"><div class="k">🙋 참가대상</div><div class="v" data-edit="key.target">전국 초등학생<small>누구나 참여 가능</small></div></div>
-      <div class="key"><div class="k">🏆 수상자 발표</div><div class="v" data-edit="key.announce">2027. 2. 4.(목)<small>16:00</small></div></div>
-    </div>
-  </div>
-
-  <!-- ===== 참여 방법 ===== -->
-  <section class="block">
+  <!-- ================= 대상 도서 ================= -->
+  <section class="panel" id="books" aria-label="대상 도서">
     <div class="wrap">
-      <div class="sec-title"><h2>이렇게 참여해요</h2></div>
-      <div class="grid2">
-        <div class="card">
-          <h3>📖 대상 도서</h3>
-          <div data-edit="guide.books">
-            <p>숲속동화문학회 추천 도서 <span class="hl">25권 중 1권을 자유롭게 골라</span> 읽고 독후감을 씁니다.</p>
-          </div>
-          <h3 style="margin-top:18px">📝 출품 양식</h3>
-          <div data-edit="guide.format">
-            <p><b>한글(HWP) 문서</b>로 작성해서 올려 주세요.</p>
-            <div class="chips"><span class="chip">바탕체</span><span class="chip">12포인트</span><span class="chip">줄간격 160</span><span class="chip">A4 2매 이내</span></div>
-            <p>파일 제목: <b>지역_학교명_학생명_도서명</b><br><span style="color:var(--muted);font-size:14px">접수하면 이 형식으로 자동으로 바뀌어 저장됩니다.</span></p>
-          </div>
-        </div>
-        <div class="card">
-          <h3>📮 접수 방법</h3>
-          <div data-edit="guide.apply">
-            <p>이 페이지 아래의 <b>온라인 접수</b>에서 보호자가 정보를 입력하고 작품 파일을 올리면 끝!</p>
-            <p style="color:var(--coral);font-weight:700">※ 2027년 1월 20일(수) 16시 이후에는 접수할 수 없습니다.</p>
-          </div>
-          <h3 style="margin-top:18px">🎉 발표 및 시상</h3>
-          <div data-edit="guide.schedule">
-            <ul>
-              <li><b>수상자 발표</b> 2027년 2월 4일(목) 16:00<br><span style="color:var(--muted);font-size:14px">숲속동화문학회 카페 공지 및 수상자 개별 문자 연락</span></li>
-              <li><b>시상식</b> 2027년 2월 27일(토)<br><span style="color:var(--muted);font-size:14px">시간 및 장소는 추후 안내</span></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== 대상 도서 ===== -->
-  <section class="block" id="books">
-    <div class="wrap">
-      <div class="sec-title"><h2>대상 도서 25권</h2><p data-edit="books.desc">마음에 드는 책 한 권을 골라 보세요!</p></div>
+      <div class="sec-head"><span class="eyebrow">BOOKS</span><h2>📚 대상 도서 25권</h2><p data-edit="books.desc">마음에 드는 책 <strong>한 권</strong>을 골라 보세요!</p></div>
       <div class="books" id="bookGrid"></div>
+      <p class="credit">📷 표지 이미지 출처: <a href="https://www.yes24.com" target="_blank" rel="noopener">예스24(YES24)</a> · 표지를 누르면 예스24의 도서 정보로 이동합니다.</p>
     </div>
   </section>
 
-  <!-- ===== 시상 ===== -->
-  <section class="block" id="awards">
+  <!-- ================= 시상·유의사항 ================= -->
+  <section class="panel" id="awards" aria-label="시상 및 유의사항">
     <div class="wrap">
-      <div class="sec-title"><h2>시상 내역</h2><p>저학년(1~3학년)과 고학년(4~6학년)으로 나누어 시상해요</p></div>
+      <div class="sec-head"><span class="eyebrow">AWARDS</span><h2>🏆 시상 내역</h2><p>저학년(1~3학년)과 고학년(4~6학년)으로 나누어 시상해요</p></div>
       <div class="grid2">
-        <div class="card" data-edit="awards.table">
+        <div class="glass" data-edit="awards.table">
           <table class="award">
             <tr><th>구분</th><th>저학년</th><th>고학년</th><th>상장 및 상금</th></tr>
             <tr class="grand"><td>대상</td><td colspan="2">1명</td><td>상장, 5만원</td></tr>
@@ -135,14 +153,14 @@
             <tr><td>장려</td><td>3명</td><td>3명</td><td>상장, 각 1만원</td></tr>
             <tr><td>입상</td><td>10명</td><td>10명</td><td>상장</td></tr>
           </table>
-          <p class="award-total">🏅 모두 37명이 상장을 받아요!</p>
+          <p class="award-total">🏅 모두 <b>37명</b>이 상장을 받아요!</p>
         </div>
-        <div class="card">
+        <div class="glass">
           <h3>⚠️ 유의사항</h3>
           <div data-edit="notes">
             <ul>
-              <li>작품을 제출할 때 개인정보 수집·이용 동의서에 동의해야 접수할 수 있습니다.</li>
-              <li>다른 공모전 수상작, 표절, AI 도구를 활용한 작품은 심사에서 제외되며, 발표 뒤라도 사실이 확인되면 수상 내역과 상품을 회수합니다.</li>
+              <li>작품을 제출할 때 <strong>개인정보 수집·이용 동의</strong>를 해야 접수할 수 있습니다.</li>
+              <li>다른 공모전 수상작, 표절, <strong>AI 도구를 활용한 작품</strong>은 심사에서 제외되며, 발표 뒤라도 사실이 확인되면 수상 내역과 상품을 회수합니다.</li>
               <li>수상작의 저작권은 수상자에게 있으며, 작품 사용권은 숲속동화문학회에 귀속됩니다.</li>
               <li>제출한 자료는 반환하지 않습니다.</li>
             </ul>
@@ -152,18 +170,18 @@
     </div>
   </section>
 
-  <!-- ===== 접수 ===== -->
-  <section class="block" id="apply">
+  <!-- ================= 온라인 접수 ================= -->
+  <section class="panel" id="apply" aria-label="온라인 접수">
     <div class="wrap">
-      <div class="sec-title"><h2>온라인 접수</h2><p data-edit="apply.desc">초등학생은 만 14세 미만이라 <b>보호자</b>가 정보를 입력하고 동의해 주셔야 해요.</p></div>
-      <div class="card form-card">
+      <div class="sec-head"><span class="eyebrow">APPLY</span><h2>✍️ 온라인 접수</h2><p data-edit="apply.desc">초등학생은 만 14세 미만이라 <strong>보호자</strong>가 정보를 입력하고 동의해 주셔야 해요.</p></div>
+      <div class="glass form-card">
         <form id="applyForm" novalidate>
           <fieldset>
             <legend>👧 참가 학생</legend>
             <div class="form-grid">
-              <div><label class="f" for="name">학생 이름 <span class="req">*</span></label><input type="text" id="name" name="name" maxlength="30" autocomplete="off" required></div>
+              <div><label class="f" for="name">학생 이름 <span class="req">*</span></label><input class="field" type="text" id="name" name="name" maxlength="30" autocomplete="off" required></div>
               <div><label class="f" for="grade">학년 <span class="req">*</span></label>
-                <select id="grade" name="grade" required>
+                <select class="field" id="grade" name="grade" required>
                   <option value="">선택하세요</option>
                   <option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option>
                   <option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option>
@@ -171,7 +189,7 @@
                 <div class="hint">1~3학년은 저학년, 4~6학년은 고학년으로 심사해요.</div>
               </div>
               <div><label class="f" for="region">지역 <span class="req">*</span></label>
-                <select id="region" name="region" required>
+                <select class="field" id="region" name="region" required>
                   <option value="">선택하세요</option>
                   <option>서울</option><option>부산</option><option>대구</option><option>인천</option><option>광주</option>
                   <option>대전</option><option>울산</option><option>세종</option><option>경기</option><option>강원</option>
@@ -179,9 +197,9 @@
                   <option>경남</option><option>제주</option><option>해외</option>
                 </select>
               </div>
-              <div><label class="f" for="school">학교(소속) <span class="req">*</span></label><input type="text" id="school" name="school" maxlength="50" placeholder="예: 숲속초등학교" required></div>
+              <div><label class="f" for="school">학교(소속) <span class="req">*</span></label><input class="field" type="text" id="school" name="school" maxlength="50" placeholder="예: 숲속초등학교" required></div>
               <div class="full"><label class="f" for="book">읽은 책 <span class="req">*</span></label>
-                <select id="book" name="book" required><option value="">대상 도서 25권 중에서 고르세요</option></select>
+                <select class="field" id="book" name="book" required><option value="">대상 도서 25권 중에서 고르세요</option></select>
               </div>
             </div>
           </fieldset>
@@ -189,74 +207,70 @@
           <fieldset>
             <legend>👪 보호자 (법정대리인)</legend>
             <div class="form-grid">
-              <div><label class="f" for="guardian">보호자 성명 <span class="req">*</span></label><input type="text" id="guardian" name="guardian" maxlength="30" autocomplete="name" required></div>
-              <div><label class="f" for="phone">보호자 휴대전화 <span class="req">*</span></label><input type="tel" id="phone" name="phone" maxlength="13" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" required>
+              <div><label class="f" for="guardian">보호자 성명 <span class="req">*</span></label><input class="field" type="text" id="guardian" name="guardian" maxlength="30" autocomplete="name" required></div>
+              <div><label class="f" for="phone">보호자 휴대전화 <span class="req">*</span></label><input class="field" type="tel" id="phone" name="phone" maxlength="13" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" required>
                 <div class="hint">수상하면 이 번호로 문자를 드려요.</div></div>
-              <div class="full"><label class="f" for="email">보호자 이메일 <span class="req">*</span></label><input type="email" id="email" name="email" maxlength="100" placeholder="example@email.com" autocomplete="email" required>
+              <div class="full"><label class="f" for="email">보호자 이메일 <span class="req">*</span></label><input class="field" type="email" id="email" name="email" maxlength="100" placeholder="example@email.com" autocomplete="email" required>
                 <div class="hint">접수가 끝나면 이 주소로 확인 메일이 가요.</div></div>
             </div>
           </fieldset>
 
           <fieldset>
-            <legend>📎 작품 제출</legend>
-            <label class="f" for="file">독후감 파일 (HWP, HWPX) <span class="req">*</span></label>
-            <input type="file" id="file" name="file" accept=".hwp,.hwpx" required>
-            <div class="hint" id="fileHint">한글 문서만 올릴 수 있어요. 최대 10MB</div>
+            <legend>📎 작품 제출 <span class="req" style="color:var(--ux-danger)">*</span></legend>
+            <!-- Lucian UX/UI Prompt #032 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#032 -->
+            <div class="ux u032" id="upload">
+              <button class="u032-zone" type="button" aria-describedby="uploadHint">
+                <svg class="u032-dash" aria-hidden="true"><rect width="100%" height="100%" rx="25"/></svg>
+                <span class="u032-orb" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M8.5 20.5H7a5 5 0 0 1-.6-10 7 7 0 0 1 13.4-1.6A5.5 5.5 0 0 1 21 20.5h-1.5M14 13v10M10.5 16.5L14 13l3.5 3.5"/></svg></span>
+                <b>독후감 파일을 끌어다 놓거나 <em>골라 주세요</em></b>
+                <small id="uploadHint">한글 문서(HWP, HWPX) · 최대 10MB</small>
+              </button>
+              <input class="u032-file" type="file" id="file" name="file" accept=".hwp,.hwpx" tabindex="-1" aria-hidden="true">
+              <ul class="u032-list" aria-live="polite"></ul>
+            </div>
           </fieldset>
 
           <fieldset>
             <legend>✅ 동의</legend>
-            <label class="agree-all"><input type="checkbox" id="agreeAll"> 아래 내용을 모두 읽고 전체 동의합니다.</label>
-
-            <div class="consent">
-              <details>
-                <summary>[필수] 개인정보 수집·이용 동의 (법정대리인)</summary>
-                <div class="body" data-edit="consent.privacy">
+            <!-- Lucian UX/UI Prompt #068 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#068 -->
+            <div class="ux u068" id="consent">
+              <h3>아래 내용을 끝까지 읽어 주세요</h3>
+              <div class="u068-doc"><div class="u068-txt" tabindex="0" role="document" aria-label="개인정보 수집·이용 동의, 사용권 귀속 동의, 창작 서약 본문">
+                <b class="h">1. 개인정보 수집·이용 동의 (법정대리인) [필수]</b>
+                <div data-edit="consent.privacy">
                   <p>숲속동화문학회는 「개인정보 보호법」 제15조 및 제22조의2에 따라 아래와 같이 개인정보를 수집·이용합니다. 만 14세 미만 아동의 개인정보이므로 법정대리인(보호자)의 동의를 받습니다.</p>
                   <table>
                     <tr><th>수집·이용 목적</th><td>독후감대회 참가 접수 및 본인 확인, 작품 심사, 수상자 발표 및 연락, 시상</td></tr>
                     <tr><th>수집 항목</th><td>(학생) 이름, 학년, 지역, 학교명, 제출 작품<br>(보호자) 성명, 휴대전화 번호, 이메일 주소</td></tr>
-                    <tr><th>보유·이용 기간</th><td><b>시상식 종료 후 6개월(2027. 8. 31.)까지</b> 보관한 뒤 지체 없이 파기합니다. 단, 수상자의 이름·학교·학년·수상 내역은 대회 기록으로 보존합니다.</td></tr>
+                    <tr><th>보유·이용 기간</th><td><strong>시상식 종료 후 6개월(2027. 8. 31.)까지</strong> 보관한 뒤 지체 없이 파기합니다. 단, 수상자의 이름·학교·학년·수상 내역은 대회 기록으로 보존합니다.</td></tr>
                     <tr><th>동의 거부 권리</th><td>동의를 거부할 권리가 있습니다. 다만 동의하지 않으면 대회에 접수할 수 없습니다.</td></tr>
                   </table>
-                  <p style="font-size:13px;color:var(--muted)">상금 지급에 필요한 정보는 수상자에게만 따로 받습니다.</p>
+                  <p>상금 지급에 필요한 정보는 수상자에게만 따로 받습니다.</p>
                 </div>
-              </details>
-              <div class="agree">
-                <label><input type="checkbox" name="agreePrivacy" class="agree-one"> 동의합니다</label>
-              </div>
-            </div>
-
-            <div class="consent">
-              <details>
-                <summary>[필수] 수상작 사용권 귀속 동의</summary>
-                <div class="body" data-edit="consent.rights">
+                <b class="h">2. 수상작 사용권 귀속 동의 [필수]</b>
+                <div data-edit="consent.rights">
                   <p>수상작의 저작권은 수상자에게 있습니다. 다만 숲속동화문학회는 수상작을 문집 발간, 누리집·SNS 게시, 대회 홍보에 사용할 수 있으며, 이때 학생 이름·학교·학년이 함께 표시될 수 있습니다.</p>
                   <p>동의하지 않을 수 있으나, 동의하지 않으면 대회에 접수할 수 없습니다.</p>
                 </div>
-              </details>
-              <div class="agree">
-                <label><input type="checkbox" name="agreeRights" class="agree-one"> 동의합니다</label>
-              </div>
-            </div>
-
-            <div class="consent">
-              <details>
-                <summary>[필수] 창작 서약</summary>
-                <div class="body" data-edit="consent.original">
+                <b class="h">3. 창작 서약 [필수]</b>
+                <div data-edit="consent.original">
                   <p>제출하는 독후감은 학생이 직접 쓴 글이며, 다른 공모전 수상작이 아니고, 다른 글을 베끼거나 AI 도구를 이용해 쓰지 않았음을 약속합니다.</p>
                   <p>사실과 다르면 심사에서 제외되며, 발표 뒤라도 수상 내역과 상품을 회수하는 데 동의합니다.</p>
                 </div>
-              </details>
-              <div class="agree">
-                <label><input type="checkbox" name="agreeOriginal" class="agree-one"> 서약합니다</label>
-              </div>
+              </div></div>
+              <div class="u068-read" aria-live="polite"><i aria-hidden="true"></i><span>끝까지 읽으면 동의 칸이 열려요</span></div>
+              <ul class="u068-list">
+                <li><label class="u068-c all"><input type="checkbox" class="u068-all"><span class="u068-box" aria-hidden="true"><svg viewBox="0 0 18 18"><path d="M3.5 9.4l3.4 3.4L14.5 5"/></svg></span>모두 동의하기</label></li>
+                <li><label class="u068-c"><input type="checkbox" name="agreePrivacy" data-req="1" disabled><span class="u068-box" aria-hidden="true"><svg viewBox="0 0 18 18"><path d="M3.5 9.4l3.4 3.4L14.5 5"/></svg></span>개인정보 수집·이용 (법정대리인)<svg class="u068-lock" viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6" width="9" height="6.5" rx="1.5"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"/></svg><em class="req">필수</em></label></li>
+                <li><label class="u068-c"><input type="checkbox" name="agreeRights" data-req="1" disabled><span class="u068-box" aria-hidden="true"><svg viewBox="0 0 18 18"><path d="M3.5 9.4l3.4 3.4L14.5 5"/></svg></span>수상작 사용권 귀속<svg class="u068-lock" viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6" width="9" height="6.5" rx="1.5"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"/></svg><em class="req">필수</em></label></li>
+                <li><label class="u068-c"><input type="checkbox" name="agreeOriginal" data-req="1" disabled><span class="u068-box" aria-hidden="true"><svg viewBox="0 0 18 18"><path d="M3.5 9.4l3.4 3.4L14.5 5"/></svg></span>창작 서약<svg class="u068-lock" viewBox="0 0 14 14" aria-hidden="true"><rect x="2.5" y="6" width="9" height="6.5" rx="1.5"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6"/></svg><em class="req">필수</em></label></li>
+              </ul>
             </div>
           </fieldset>
 
           <div class="hp" aria-hidden="true"><label>웹사이트<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
 
-          <button type="submit" class="btn primary" id="submitBtn" style="width:100%">📨 접수하기</button>
+          <button type="submit" class="btn primary submit" id="submitBtn">📨 접수하기</button>
           <div class="form-msg" id="formMsg" role="alert"></div>
         </form>
 
@@ -271,14 +285,14 @@
     </div>
   </section>
 
-  <!-- ===== 관리자: 접수 목록 ===== -->
-  <section class="block" id="entries">
+  <!-- ================= 관리자: 접수 목록 ================= -->
+  <section class="panel" id="entries" aria-label="접수 목록">
     <div class="wrap">
-      <div class="sec-title"><h2>접수 목록</h2><p>관리자에게만 보입니다</p></div>
-      <div class="card">
+      <div class="sec-head"><span class="eyebrow">ADMIN</span><h2>📋 접수 목록</h2><p>관리자에게만 보입니다</p></div>
+      <div class="glass">
         <div class="entries-tools">
-          <input type="text" id="entrySearch" placeholder="이름, 학교, 전화번호로 찾기">
-          <button type="button" class="btn ghost" id="reloadEntries" style="padding:10px 16px;font-size:15px">🔄 새로고침</button>
+          <input class="field" type="text" id="entrySearch" placeholder="이름, 학교, 전화번호로 찾기">
+          <button type="button" class="btn ghost small" id="reloadEntries">🔄 새로고침</button>
           <span class="count" id="entryCount"></span>
         </div>
         <div class="table-scroll">
@@ -294,27 +308,39 @@
 
 <footer>
   <div class="wrap">
-    <div>
-      <div class="org" data-edit="footer.org">숲속동화문학회</div>
-      <div data-edit="footer.contact">문자 문의 · 전국어린이독후감쓰기 대회 운영위원 <a href="sms:01053714818">010-5371-4818</a></div>
-    </div>
+    <div class="org" data-edit="footer.org">숲속동화문학회</div>
+    <p data-edit="footer.contact">문자 문의 · 전국어린이독후감쓰기 대회 운영위원 <a href="sms:01053714818">010-5371-4818</a></p>
+    <p>© 2026 숲속동화문학회 · 책 속 숲길을 걷는 어린이들</p>
+    <p style="font-size:12.5px">표지 이미지 출처: <a href="https://www.yes24.com" target="_blank" rel="noopener">예스24(YES24)</a> · 일부 화면 요소: <a href="https://lucianlabs.dev/uxui-prompt/" target="_blank" rel="noopener">Lucian UX/UI Prompt</a> (MIT)</p>
     <button type="button" class="admin-link" id="adminLink">🔒 관리자</button>
   </div>
 </footer>
 
-<dialog id="loginDialog">
-  <form method="dialog" id="loginForm">
-    <h3>관리자 로그인</h3>
-    <input type="password" id="loginPw" placeholder="비밀번호" autocomplete="current-password" required>
-    <div class="err" id="loginErr"></div>
-    <div class="row">
-      <button type="button" class="btn ghost" id="loginCancel" style="padding:10px 18px;font-size:15px">취소</button>
-      <button type="submit" class="btn primary" id="loginBtn" style="padding:10px 18px;font-size:15px">로그인</button>
+<dialog class="login" id="loginDialog" aria-label="관리자 로그인">
+  <!-- Lucian UX/UI Prompt #062 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#062 -->
+  <div class="ux u062" id="loginCard">
+    <form class="u062-pane u062-login" novalidate>
+      <span class="u062-logo" aria-hidden="true">숲</span>
+      <h3>관리자 로그인</h3>
+      <p>숲속 독후감대회 관리 화면입니다</p>
+      <div class="u062-f u062-pw"><label for="loginPw">비밀번호</label><span class="u062-caps" aria-live="polite">Caps Lock 켜짐</span><div class="u062-box"><input type="password" id="loginPw" placeholder="비밀번호 입력" autocomplete="current-password"><button class="u062-eye" type="button" aria-pressed="false" aria-label="비밀번호 보기"><svg viewBox="0 0 24 24"><g class="u062-lid"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></g><path class="u062-slash" d="M4 4l16 16"/></svg></button></div><div class="u062-err"><span role="alert" id="loginErr"></span></div></div>
+      <div class="u062-row"><span>비밀번호는 설정 시트에서 바꿀 수 있어요</span><button type="button" id="loginCancel">닫기</button></div>
+      <button class="u062-go" type="submit"><span>로그인</span><i aria-hidden="true"></i><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M6 13.5l4.5 4.5L20 8.5"/></svg></button>
+    </form>
+    <div class="u062-pane u062-hi" aria-hidden="true">
+      <span class="u062-av" aria-hidden="true">✏️</span>
+      <h3>관리자 모드예요</h3>
+      <p>연필을 눌러 내용을 고칠 수 있어요</p>
     </div>
-  </form>
+  </div>
 </dialog>
 
-<div class="toast" id="toast" role="status"></div>
+<!-- Lucian UX/UI Prompt #070 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#070 -->
+<div class="ux u070" id="toasts">
+  <div class="u070-zone" role="region" aria-label="알림" tabindex="-1">
+    <div class="u070-live" aria-live="polite"></div>
+  </div>
+</div>
 
 <script src="config.js"></script>
 <script src="assets/app.js"></script>
