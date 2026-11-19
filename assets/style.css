@@ -356,3 +356,13 @@ dialog.lightbox img { width: 100%; height: auto; border-radius: 14px; margin-top
 
 /* 하단 문자 보내기 아이콘 */
 footer .icon-btn { width: 32px; height: 32px; font-size: 15px; margin-left: 2px; vertical-align: middle; }
+
+/* PC 폭이 좁을 때(900~1099px) 상단 메뉴가 넘치지 않도록 */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .u039-tab { padding: 0 10px; font-size: 13px; }
+  .brand { font-size: 15px; gap: 8px; }
+  .brand-mark { width: 36px; height: 36px; font-size: 17px; }
+}
+@media (min-width: 900px) and (max-width: 1099px) {
+  body.admin .brand > span:last-child { display: none; }
+}
