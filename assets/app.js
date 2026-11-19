@@ -380,6 +380,20 @@
     });
   })();
 
+  /* ================= 포스터 크게 보기 ================= */
+  (function () {
+    var dlg = $('#posterDialog');
+    $$('[data-poster]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+        dlg.scrollTop = 0;
+        $('#posterClose').focus();
+      });
+    });
+    $('#posterClose').addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+  })();
+
   /* ================= 도서 목록 (표지 출처: 예스24) ================= */
   (function () {
     $('#bookGrid').innerHTML = BOOKS.map(function (b, i) {
@@ -465,7 +479,7 @@
         : '접수 기간이 끝났습니다. 참여해 주셔서 고맙습니다.';
     } else if (!sending) {
       btn.disabled = false;
-      btn.textContent = '📨 접수하기';
+      btn.textContent = editing ? '✏️ 수정 내용 저장' : '📨 접수하기';
       if (msg.classList.contains('info')) msg.className = 'form-msg';
     }
   }
@@ -600,7 +614,7 @@
   })();
 
   /* ================= 접수 폼 ================= */
-  var sending = false;
+  var sending = false, editing = null, startEdit = function () {}, endEdit = function () {};
   (function () {
     var form = $('#applyForm'), msg = $('#formMsg'), phone = $('#phone');
     phone.addEventListener('input', function () {
@@ -619,42 +633,49 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (phase() !== 'open' || sending) return;
+      var ed = editing;
       var f = form.elements;
       var req = [['name', '학생 이름'], ['grade', '학년'], ['region', '지역'], ['school', '학교(소속)'], ['book', '읽은 책'], ['guardian', '보호자 성명']];
       for (var i = 0; i < req.length; i++) {
         if (!f[req[i][0]].value.trim()) return fail(req[i][1] + '을(를) 입력해 주세요.', f[req[i][0]]);
       }
       var digits = f.phone.value.replace(/\D/g, '');
-      if (!/^01[016789]\d{7,8}$/.test(digits)) return fail('보호자 휴대전화 번호를 확인해 주세요.', f.phone);
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.value.trim())) return fail('보호자 이메일 주소를 확인해 주세요.', f.email);
+      var email = f.email.value.trim();
+      // 수정할 때는 전화번호·이메일을 비워 두면 그대로 둡니다
+      if ((!ed || digits) && !/^01[016789]\d{7,8}$/.test(digits)) return fail('보호자 휴대전화 번호를 확인해 주세요.', f.phone);
+      if ((!ed || email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('보호자 이메일 주소를 확인해 주세요.', f.email);
       if (upload.busy()) return fail('작품 파일을 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
       var file = upload.get();
-      if (!file) { upload.focus(); return fail('작품 파일을 올려 주세요.'); }
-      if (!consent.ok()) { consent.focus(); return fail('필수 동의 항목 3개에 모두 체크해 주세요.'); }
+      if (!ed && !file) { upload.focus(); return fail('작품 파일을 올려 주세요.'); }
+      if (!ed && !consent.ok()) { consent.focus(); return fail('필수 동의 항목 3개에 모두 체크해 주세요.'); }
       if (!API) return fail('접수 서버가 아직 연결되지 않았습니다. 잠시 뒤에 다시 시도해 주세요.');
 
       var btn = $('#submitBtn');
       sending = true;
       btn.disabled = true;
-      btn.textContent = '⏳ 접수하고 있어요… 창을 닫지 마세요';
+      btn.textContent = ed ? '⏳ 수정하고 있어요… 창을 닫지 마세요' : '⏳ 접수하고 있어요… 창을 닫지 마세요';
       msg.className = 'form-msg';
-      var note = toast('wait', '접수하고 있어요…', file.name);
+      var note = toast('wait', ed ? '수정 내용을 저장하고 있어요…' : '접수하고 있어요…', file ? file.name : ed.receiptNo);
 
-      apiPost({
-        action: 'apply',
+      var body = {
         name: f.name.value.trim(), grade: f.grade.value, region: f.region.value, school: f.school.value.trim(),
-        book: f.book.value, guardian: f.guardian.value.trim(), phone: digits, email: f.email.value.trim(),
-        agreePrivacy: true, agreeRights: true, agreeOriginal: true, website: f.website.value,
-        file: { name: file.name, data: file.data }
-      }).then(function (res) {
-        note.done('ok', '접수가 완료되었습니다', '접수번호 ' + res.receiptNo);
+        book: f.book.value, guardian: f.guardian.value.trim(), phone: digits, email: email,
+        file: file ? { name: file.name, data: file.data } : null
+      };
+      if (ed) { body.action = 'update'; body.editToken = ed.token; body.receiptNo = ed.receiptNo; }
+      else { body.action = 'apply'; body.agreePrivacy = true; body.agreeRights = true; body.agreeOriginal = true; body.website = f.website.value; }
+
+      apiPost(body).then(function (res) {
+        note.done('ok', ed ? '수정이 완료되었습니다' : '접수가 완료되었습니다', '접수번호 ' + res.receiptNo);
+        $('#doneTitle').textContent = ed ? '수정이 완료되었습니다!' : '접수가 완료되었습니다!';
         $('#receiptNo').textContent = res.receiptNo;
+        endEdit(true);
         form.style.display = 'none';
         $('#doneBox').classList.add('show');
         $('#apply').scrollIntoView();
       }).catch(function (err) {
-        note.done('err', '접수하지 못했어요', err.message);
-        fail(err.message || '접수 중 문제가 생겼습니다. 다시 시도해 주세요.');
+        note.done('err', ed ? '수정하지 못했어요' : '접수하지 못했어요', err.message);
+        fail(err.message || '문제가 생겼습니다. 다시 시도해 주세요.');
       }).then(function () {
         sending = false;
         renderStatus();
@@ -668,6 +689,91 @@
       form.style.display = '';
       $('#doneBox').classList.remove('show');
       $('#name').focus();
+    });
+
+    /* ---------- 수정 모드 ---------- */
+    var HINT = { phone: $('#phoneHint').textContent, email: $('#emailHint').textContent };
+    startEdit = function (token, en) {
+      editing = { token: token, receiptNo: en.receiptNo };
+      form.reset();
+      upload.reset();
+      form.classList.add('editing');
+      form.style.display = '';
+      $('#doneBox').classList.remove('show');
+      var f = form.elements;
+      f.name.value = en.name; f.grade.value = en.grade; f.region.value = en.region;
+      f.school.value = en.school; f.guardian.value = en.guardian;
+      if (!$$('#book option').some(function (o) { return o.value === en.book; })) {
+        var o = document.createElement('option'); o.value = en.book; o.textContent = en.book; $('#book').appendChild(o);
+      }
+      f.book.value = en.book;
+      f.phone.required = false; f.email.required = false;
+      f.phone.placeholder = en.phoneMasked; f.email.placeholder = en.emailMasked;
+      $('#phoneHint').textContent = '바꿀 때만 새 번호를 입력하세요. 비워 두면 그대로예요.';
+      $('#emailHint').textContent = '바꿀 때만 새 주소를 입력하세요. 비워 두면 그대로예요. 수정 확인 메일은 이 주소로 가요.';
+      var fc = $('#fileCurrent');
+      fc.hidden = false;
+      fc.textContent = '📄 지금 제출된 파일: ' + String(en.fileName || '').replace(/^R\d+_/, '') + ' · 새 파일을 올리면 바뀌고, 올리지 않으면 그대로예요.';
+      $('#editNo').textContent = en.receiptNo;
+      $('#editBanner').hidden = false;
+      msg.className = 'form-msg';
+      renderStatus();
+      $('#editBanner').scrollIntoView({ block: 'center' });
+    };
+    endEdit = function (keepFormHidden) {
+      if (!editing) return;
+      editing = null;
+      form.classList.remove('editing');
+      form.reset();
+      upload.reset();
+      var f = form.elements;
+      f.phone.required = true; f.email.required = true;
+      f.phone.placeholder = '010-0000-0000'; f.email.placeholder = 'example@email.com';
+      $('#phoneHint').textContent = HINT.phone; $('#emailHint').textContent = HINT.email;
+      $('#fileCurrent').hidden = true;
+      $('#editBanner').hidden = true;
+      if (!keepFormHidden) msg.className = 'form-msg';
+      renderStatus();
+    };
+    $('#editCancel').addEventListener('click', function () { endEdit(); toast('info', '수정을 취소했어요'); });
+  })();
+
+  /* ================= 접수 확인 (학생 이름 + 휴대전화 뒷 4자리) ================= */
+  (function () {
+    var tg = $('#lookupToggle'), body = $('#lookupBody'), lf = $('#lookupForm'), msg = $('#lookupMsg'), list = $('#lookupList');
+    var last4 = $('#lkLast4');
+    tg.addEventListener('click', function () {
+      var open = tg.getAttribute('aria-expanded') !== 'true';
+      tg.setAttribute('aria-expanded', String(open));
+      body.hidden = !open;
+      if (open) $('#lkName').focus();
+    });
+    last4.addEventListener('input', function () { last4.value = last4.value.replace(/\D/g, '').slice(0, 4); });
+    lf.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = $('#lkName').value.trim(), l4 = last4.value;
+      list.innerHTML = '';
+      if (!name) { msg.className = 'form-msg err'; msg.textContent = '학생 이름을 입력해 주세요.'; $('#lkName').focus(); return; }
+      if (!/^\d{4}$/.test(l4)) { msg.className = 'form-msg err'; msg.textContent = '휴대전화 뒷 4자리 숫자를 입력해 주세요.'; last4.focus(); return; }
+      if (!API) { msg.className = 'form-msg err'; msg.textContent = '접수 서버가 아직 연결되지 않았습니다.'; return; }
+      var btn = $('#lookupBtn');
+      btn.disabled = true; btn.textContent = '찾는 중…';
+      msg.className = 'form-msg';
+      apiPost({ action: 'lookup', name: name, last4: l4 }).then(function (res) {
+        msg.className = 'form-msg info';
+        msg.textContent = res.entries.length + '건을 찾았어요.' + (res.canEdit ? ' 고칠 접수의 [수정하기]를 눌러 주세요. (' + res.minutes + '분 안에 저장해 주세요)' : ' 지금은 접수 기간이 아니라서 확인만 할 수 있어요.');
+        list.innerHTML = res.entries.map(function (en, i) {
+          return '<li class="tile"><div class="meta"><span class="no">' + esc(en.receiptNo) + '</span><b>' + esc(en.name) + '</b> · ' + esc(en.grade) + '학년 · ' + esc(en.region) + ' ' + esc(en.school) +
+            '<br>📖 ' + esc(en.book) + '<br><span class="muted">접수 ' + esc(en.date) + (en.edited ? ' · 수정 ' + esc(en.edited) : '') + ' · 📞 ' + esc(en.phoneMasked) + ' · ✉️ ' + esc(en.emailMasked) + '</span></div>' +
+            (res.canEdit ? '<button type="button" class="btn primary small" data-i="' + i + '">✏️ 수정하기</button>' : '') + '</li>';
+        }).join('');
+        $$('button[data-i]', list).forEach(function (b) {
+          b.addEventListener('click', function () { startEdit(res.editToken, res.entries[Number(b.getAttribute('data-i'))]); });
+        });
+      }).catch(function (err) {
+        msg.className = 'form-msg err';
+        msg.textContent = err.message;
+      }).then(function () { btn.disabled = false; btn.textContent = '확인'; });
     });
   })();
 
@@ -836,7 +942,7 @@
       var tel = String(r[9]).replace(/\D/g, '');
       var fileLink = /^https:\/\//.test(r[12]) ? '<a href="' + esc(r[12]) + '" target="_blank" rel="noopener">📄 열기</a>' : esc(r[11]);
       return '<tr>' +
-        '<td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td><strong>' + esc(r[2]) + '</strong></td>' +
+        '<td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + (r[17] ? '<br><small>✏️ 수정 ' + esc(r[17]) + '</small>' : '') + '</td><td><strong>' + esc(r[2]) + '</strong></td>' +
         '<td>' + esc(r[3]) + ' <small>(' + esc(r[4]) + ')</small></td>' +
         '<td>' + esc(r[5]) + ' · ' + esc(r[6]) + '</td><td>' + esc(r[7]) + '</td><td>' + esc(r[8]) + '</td>' +
         '<td>' + esc(r[9]) +

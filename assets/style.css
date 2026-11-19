@@ -288,3 +288,62 @@ footer .admin-link { background: none; border: 0; color: var(--ux-ink-3); font: 
   .blobs i, body.tabbed .panel.is-active, .done-box.show { animation: none; }
   .btn, .tile { transition: none; }
 }
+
+/* ---------- 접수 확인·수정 ---------- */
+.lookup-card { margin-bottom: 18px; padding: 0; overflow: hidden; }
+.lookup-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 18px 24px; border: 0; background: none; font: 600 16px var(--font); color: var(--ink); cursor: pointer; text-align: left;
+}
+.lookup-toggle strong { color: var(--primary); }
+.lookup-toggle .chev { transition: transform .3s var(--ux-ease); color: var(--muted); }
+.lookup-toggle[aria-expanded="true"] .chev { transform: rotate(180deg); }
+#lookupBody { padding: 0 24px 22px; animation: pageIn .4s var(--ux-ease); }
+#lookupBody > p { margin-top: 0; }
+.lookup-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; }
+.lookup-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.lookup-list li { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.lookup-list .meta { font-size: 14.5px; line-height: 1.55; }
+.lookup-list .meta b { font-size: 15.5px; }
+.lookup-list .no { display: inline-block; background: var(--ux-accent-soft); color: var(--primary); font-weight: 800; font-size: 13px; padding: 1px 10px; border-radius: 999px; margin-right: 6px; }
+.edit-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  margin: -6px 0 20px; padding: 12px 16px; border-radius: var(--r-md);
+  background: rgba(255, 207, 112, .3); font-weight: 650;
+}
+.edit-banner[hidden] { display: none; }
+form.editing #consentSet { display: none; }
+@media (max-width: 520px) {
+  .lookup-toggle { padding: 16px 18px; font-size: 15px; }
+  #lookupBody { padding: 0 18px 18px; }
+  .lookup-row { grid-template-columns: 1fr 1fr; }
+  .lookup-row .btn { grid-column: 1 / -1; }
+}
+
+/* ---------- 포스터 ---------- */
+.poster-card { display: grid; grid-template-columns: 170px 1fr; gap: 24px; align-items: center; margin-top: 18px; }
+.poster-card .eyebrow { font-size: 13px; font-weight: 800; letter-spacing: .12em; color: var(--primary); }
+.poster-card h3 { margin: 2px 0 6px; }
+.poster-thumb {
+  position: relative; display: block; padding: 0; border: 0; cursor: zoom-in; background: #fff;
+  border-radius: 12px; overflow: hidden; box-shadow: 0 12px 26px -10px rgba(36, 50, 74, .35); transition: transform .25s var(--ux-spring);
+}
+.poster-thumb:hover { transform: translateY(-4px) rotate(-1.5deg); }
+.poster-thumb img { width: 100%; height: auto; }
+.poster-thumb .zoom {
+  position: absolute; right: 8px; bottom: 8px; width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center; background: rgba(255, 255, 255, .9); box-shadow: var(--shadow-sm); font-size: 15px;
+}
+dialog.lightbox {
+  border: 0; padding: 0; background: none; width: min(860px, 100vw - 24px); max-height: calc(100vh - 24px); overflow: auto;
+  border-radius: 18px;
+}
+dialog.lightbox::backdrop { background: rgba(20, 28, 45, .7); backdrop-filter: blur(4px); }
+dialog.lightbox[open] { animation: pageIn .35s var(--ux-ease); }
+.lb-bar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: flex-end; gap: 8px; padding: 10px; }
+dialog.lightbox img { width: 100%; height: auto; border-radius: 14px; margin-top: -58px; box-shadow: var(--shadow); background: #fff; }
+@media (max-width: 520px) {
+  .poster-card { grid-template-columns: 110px 1fr; gap: 16px; }
+  .poster-card .actions { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .poster-thumb, dialog.lightbox[open] { transition: none; animation: none; } }

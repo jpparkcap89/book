@@ -79,6 +79,7 @@
         <div class="actions">
           <a class="btn primary" href="#apply" data-nav="apply">✍️ 지금 접수하기</a>
           <a class="btn ghost" href="#books" data-nav="books">📚 대상 도서 보기</a>
+          <button type="button" class="btn ghost" data-poster>🖼️ 포스터 보기</button>
         </div>
       </div>
 
@@ -86,6 +87,22 @@
         <div class="tile key"><div class="k">📅 접수기간</div><div class="v" data-edit="key.period">2026. 12. 10.(목) ~<br>2027. 1. 20.(수) 16시</div></div>
         <div class="tile key"><div class="k">🙋 참가대상</div><div class="v" data-edit="key.target">전국 초등학생<small>누구나 참여 가능</small></div></div>
         <div class="tile key"><div class="k">🏆 수상자 발표</div><div class="v" data-edit="key.announce">2027. 2. 4.(목)<small>16:00</small></div></div>
+      </div>
+
+      <div class="glass poster-card">
+        <button type="button" class="poster-thumb" data-poster aria-label="대회 안내 포스터 크게 보기">
+          <img src="poster/poster.png" alt="제15회 전국어린이독후감쓰기 대회 안내 포스터" loading="lazy" width="2382" height="3369">
+          <span class="zoom" aria-hidden="true">🔍</span>
+        </button>
+        <div>
+          <span class="eyebrow">POSTER</span>
+          <h3>🖼️ 대회 안내 포스터</h3>
+          <p class="muted">포스터를 누르면 크게 볼 수 있어요. 학교나 학원 게시판에 붙이실 수 있도록 인쇄용 PDF도 있어요.</p>
+          <div class="actions" style="justify-content:flex-start">
+            <button type="button" class="btn primary small" data-poster>크게 보기</button>
+            <a class="btn ghost small" href="poster/poster.pdf" download="제15회_독후감대회_포스터.pdf">⬇️ PDF 내려받기</a>
+          </div>
+        </div>
       </div>
 
       <!-- Lucian UX/UI Prompt #251 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#251 -->
@@ -174,7 +191,29 @@
   <section class="panel" id="apply" aria-label="온라인 접수">
     <div class="wrap">
       <div class="sec-head"><span class="eyebrow">APPLY</span><h2>✍️ 온라인 접수</h2><p data-edit="apply.desc">초등학생은 만 14세 미만이라 <strong>보호자</strong>가 정보를 입력하고 동의해 주셔야 해요.</p></div>
+      <div class="glass form-card lookup-card" id="lookupCard">
+        <button type="button" class="lookup-toggle" id="lookupToggle" aria-expanded="false" aria-controls="lookupBody">
+          <span>✏️ 이미 접수하셨나요? <strong>접수 확인·수정</strong></span><span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <div id="lookupBody" hidden>
+          <p class="muted">접수할 때 입력한 <strong>학생 이름</strong>과 <strong>보호자 휴대전화 뒷 4자리</strong>로 찾아요. 수정은 접수 기간 안에만 할 수 있어요.</p>
+          <form id="lookupForm" class="lookup-row" novalidate>
+            <label class="sr-only" for="lkName">학생 이름</label>
+            <input class="field" type="text" id="lkName" placeholder="학생 이름" maxlength="30" autocomplete="off">
+            <label class="sr-only" for="lkLast4">보호자 휴대전화 뒷 4자리</label>
+            <input class="field" type="text" id="lkLast4" placeholder="휴대전화 뒷 4자리" inputmode="numeric" maxlength="4" autocomplete="off">
+            <button type="submit" class="btn primary small" id="lookupBtn">확인</button>
+          </form>
+          <div class="form-msg" id="lookupMsg" role="alert"></div>
+          <ul class="lookup-list" id="lookupList"></ul>
+        </div>
+      </div>
+
       <div class="glass form-card">
+        <div class="edit-banner" id="editBanner" hidden>
+          <span>✏️ <strong id="editNo"></strong> 접수를 수정하고 있어요</span>
+          <button type="button" class="btn ghost small" id="editCancel">수정 취소</button>
+        </div>
         <form id="applyForm" novalidate>
           <fieldset>
             <legend>👧 참가 학생</legend>
@@ -209,9 +248,9 @@
             <div class="form-grid">
               <div><label class="f" for="guardian">보호자 성명 <span class="req">*</span></label><input class="field" type="text" id="guardian" name="guardian" maxlength="30" autocomplete="name" required></div>
               <div><label class="f" for="phone">보호자 휴대전화 <span class="req">*</span></label><input class="field" type="tel" id="phone" name="phone" maxlength="13" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric" required>
-                <div class="hint">수상하면 이 번호로 문자를 드려요.</div></div>
+                <div class="hint" id="phoneHint">수상하면 이 번호로 문자를 드려요.</div></div>
               <div class="full"><label class="f" for="email">보호자 이메일 <span class="req">*</span></label><input class="field" type="email" id="email" name="email" maxlength="100" placeholder="example@email.com" autocomplete="email" required>
-                <div class="hint">접수가 끝나면 이 주소로 확인 메일이 가요.</div></div>
+                <div class="hint" id="emailHint">접수가 끝나면 이 주소로 확인 메일이 가요.</div></div>
             </div>
           </fieldset>
 
@@ -228,9 +267,10 @@
               <input class="u032-file" type="file" id="file" name="file" accept=".hwp,.hwpx" tabindex="-1" aria-hidden="true">
               <ul class="u032-list" aria-live="polite"></ul>
             </div>
+            <p class="hint" id="fileCurrent" hidden></p>
           </fieldset>
 
-          <fieldset>
+          <fieldset id="consentSet">
             <legend>✅ 동의</legend>
             <!-- Lucian UX/UI Prompt #068 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#068 -->
             <div class="ux u068" id="consent">
@@ -276,9 +316,10 @@
 
         <div class="done-box" id="doneBox">
           <div class="big">🎉</div>
-          <h3>접수가 완료되었습니다!</h3>
+          <h3 id="doneTitle">접수가 완료되었습니다!</h3>
           <div class="receipt">접수번호 <span id="receiptNo"></span></div>
-          <p>입력하신 보호자 이메일로 확인 메일을 보냈어요.<br>메일이 보이지 않으면 스팸함도 확인해 주세요.</p>
+          <p>보호자 이메일로 확인 메일을 보냈어요.<br>메일이 보이지 않으면 스팸함도 확인해 주세요.</p>
+          <p class="muted">고칠 내용이 생기면 위 <strong>접수 확인·수정</strong>에서 학생 이름과 휴대전화 뒷 4자리로 찾아 고칠 수 있어요.</p>
           <button type="button" class="btn ghost" id="againBtn">다른 학생 접수하기</button>
         </div>
       </div>
@@ -315,6 +356,14 @@
     <button type="button" class="admin-link" id="adminLink">🔒 관리자</button>
   </div>
 </footer>
+
+<dialog class="lightbox" id="posterDialog" aria-label="대회 안내 포스터">
+  <div class="lb-bar">
+    <a class="btn ghost small" href="poster/poster.pdf" download="제15회_독후감대회_포스터.pdf">⬇️ PDF</a>
+    <button type="button" class="btn primary small" id="posterClose" aria-label="포스터 닫기">✕ 닫기</button>
+  </div>
+  <img src="poster/poster.png" alt="제15회 전국어린이독후감쓰기 대회 안내 포스터" loading="lazy">
+</dialog>
 
 <dialog class="login" id="loginDialog" aria-label="관리자 로그인">
   <!-- Lucian UX/UI Prompt #062 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#062 -->

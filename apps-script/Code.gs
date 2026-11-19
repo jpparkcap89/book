@@ -18,8 +18,10 @@ var SHEET_ENTRIES = '접수목록';
 var ENTRY_HEADERS = [
   '접수번호', '접수일시', '학생 이름', '학년', '구분', '지역', '학교(소속)', '선택 도서',
   '보호자 성명', '보호자 휴대전화', '보호자 이메일', '작품 파일', '파일 링크',
-  '개인정보 동의', '작품 사용권 동의', '창작 서약', '동의 일시'
+  '개인정보 동의', '작품 사용권 동의', '창작 서약', '동의 일시', '수정일시'
 ];
+// 접수목록 열 위치 (0부터)
+var COL = { no: 0, date: 1, name: 2, grade: 3, level: 4, region: 5, school: 6, book: 7, guardian: 8, phone: 9, email: 10, fileName: 11, fileUrl: 12, edited: 17 };
 
 var DEFAULT_SETTINGS = [
   ['adminMail', '', '접수 알림을 받을 관리자 메일 주소'],
@@ -35,6 +37,8 @@ var DEFAULT_SETTINGS = [
 var ALLOWED_EXT = ['hwp', 'hwpx'];
 var TOKEN_HOURS = 6;
 var MAX_LOGIN_FAILS = 5;
+var MAX_LOOKUP_FAILS = 5;   // 같은 이름으로 1시간에 틀릴 수 있는 횟수
+var EDIT_MINUTES = 30;      // 접수 확인 뒤 수정할 수 있는 시간
 
 /* ------------------------------------------------------------------ */
 /*  설치                                                               */
@@ -69,7 +73,9 @@ function setup() {
     et.appendRow(ENTRY_HEADERS);
     et.setFrozenRows(1);
     et.getRange(1, 1, 1, ENTRY_HEADERS.length).setFontWeight('bold').setBackground('#e8f3e3');
-    et.getRange('A:Q').setNumberFormat('@');
+    et.getRange('A:R').setNumberFormat('@');
+  } else if (et.getRange(1, ENTRY_HEADERS.length).getValue() === '') {
+    et.getRange(1, ENTRY_HEADERS.length).setValue(ENTRY_HEADERS[ENTRY_HEADERS.length - 1]).setFontWeight('bold').setBackground('#e8f3e3');
   }
 
   var s = getSettings_();
@@ -114,6 +120,8 @@ function doPost(e) {
       case 'logout': return json_(logout_(body));
       case 'saveContent': return json_(saveContent_(body));
       case 'list': return json_(listEntries_(body));
+      case 'lookup': return json_(lookup_(body));
+      case 'update': return json_(update_(body));
       default: return json_({ ok: false, error: '알 수 없는 요청입니다.' });
     }
   } catch (err) {
@@ -231,9 +239,11 @@ function apply_(b) {
   return { ok: true, receiptNo: receiptNo };
 }
 
-function sendMails_(s, d) {
+function sendMails_(s, d, edited) {
   var sender = s.senderName || '숲속동화문학회';
   var phone = s.adminPhone || '010-5371-4818';
+  var title = edited ? '접수 내용이 수정되었습니다' : '접수가 완료되었습니다';
+  var howEdit = '접수 내용을 고치려면 book.cap89.com → 접수하기 → "접수 확인·수정"에서 학생 이름과 보호자 휴대전화 뒷 4자리를 넣으세요. (접수 기간 안에만 고칠 수 있습니다)';
   var rows = [
     ['접수번호', d.receiptNo],
     ['학생 이름', d.name],
@@ -256,12 +266,14 @@ function sendMails_(s, d) {
     MailApp.sendEmail({
       to: d.email,
       name: sender,
-      subject: '[제15회 전국어린이독후감쓰기 대회] 접수가 완료되었습니다',
-      body: '접수가 완료되었습니다.\n\n' + textRows +
+      subject: '[제15회 전국어린이독후감쓰기 대회] ' + title,
+      body: title + '.\n\n' + textRows +
+        '\n\n' + howEdit +
         '\n\n수상자 발표: 2027년 2월 4일(목) 16:00\n문의: ' + phone + ' (문자)\n\n' + sender,
       htmlBody: '<div style="font-family:sans-serif;line-height:1.6">' +
-        '<h2 style="color:#2f6b3a">접수가 완료되었습니다.</h2>' +
-        '<p>' + esc_(d.guardian) + ' 님, ' + esc_(d.name) + ' 학생의 독후감이 잘 접수되었습니다.</p>' + table +
+        '<h2 style="color:#3b63f6">' + title + '.</h2>' +
+        '<p>' + esc_(d.guardian) + ' 님, ' + esc_(d.name) + ' 학생의 독후감이 잘 ' + (edited ? '수정' : '접수') + '되었습니다.</p>' + table +
+        '<p style="margin-top:16px;color:#555;font-size:13px">' + esc_(howEdit) + '</p>' +
         '<p style="margin-top:16px">수상자 발표: <b>2027년 2월 4일(목) 16:00</b><br>문의: ' + esc_(phone) + ' (문자)</p>' +
         '<p style="color:#888;font-size:12px">이 메일은 발신 전용입니다. ' + esc_(sender) + '</p></div>'
     });
@@ -273,13 +285,182 @@ function sendMails_(s, d) {
       MailApp.sendEmail({
         to: s.adminMail,
         name: sender,
-        subject: '[독후감대회 접수] ' + d.receiptNo + ' ' + d.name + ' (' + d.school + ')',
-        body: '접수가 완료되었습니다.\n\n' + textRows + '\n파일 링크: ' + d.fileUrl,
-        htmlBody: '<div style="font-family:sans-serif;line-height:1.6"><h2 style="color:#2f6b3a">접수가 완료되었습니다.</h2>' + table +
+        subject: '[독후감대회 ' + (edited ? '수정' : '접수') + '] ' + d.receiptNo + ' ' + d.name + ' (' + d.school + ')',
+        body: title + '.\n\n' + textRows + '\n파일 링크: ' + d.fileUrl,
+        htmlBody: '<div style="font-family:sans-serif;line-height:1.6"><h2 style="color:#3b63f6">' + title + '.</h2>' + table +
           '<p><a href="' + esc_(d.fileUrl) + '">작품 파일 열기</a></p></div>'
       });
     } catch (e) { console.error('관리자 메일 실패', e); }
   }
+}
+
+/* ------------------------------------------------------------------ */
+/*  접수 확인·수정 (학생 이름 + 보호자 휴대전화 뒷 4자리)              */
+/* ------------------------------------------------------------------ */
+
+function lookup_(b) {
+  var name = clean_(b.name, 30);
+  var last4 = String(b.last4 || '').replace(/[^0-9]/g, '');
+  if (!name || !/^\d{4}$/.test(last4)) throw new Error('학생 이름과 휴대전화 뒷 4자리를 입력해 주세요.');
+
+  // 같은 이름으로 뒷자리를 하나씩 넣어 보는 것을 막습니다
+  var cache = CacheService.getScriptCache();
+  var key = 'lk_' + digestHex_(name);
+  var fails = Number(cache.get(key) || 0);
+  if (fails >= MAX_LOOKUP_FAILS) throw new Error('확인 시도가 너무 많습니다. 1시간 뒤에 다시 시도해 주세요.');
+
+  var rows = entryRows_();
+  var found = [];
+  rows.forEach(function (r) {
+    if (String(r[COL.name]).trim() === name && String(r[COL.phone]).replace(/\D/g, '').slice(-4) === last4) {
+      found.push(r);
+    }
+  });
+  if (!found.length) {
+    cache.put(key, String(fails + 1), 3600);
+    Utilities.sleep(600);
+    throw new Error('일치하는 접수가 없습니다. 학생 이름과 휴대전화 뒷 4자리를 확인해 주세요.');
+  }
+  cache.remove(key);
+
+  var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+  cache.put('ed_' + token, JSON.stringify(found.map(function (r) { return r[COL.no]; })), EDIT_MINUTES * 60);
+
+  var s = getSettings_();
+  return {
+    ok: true,
+    editToken: token,
+    minutes: EDIT_MINUTES,
+    canEdit: isOpen_(s),
+    entries: found.map(function (r) {
+      return {
+        receiptNo: r[COL.no],
+        date: r[COL.date],
+        edited: r[COL.edited] || '',
+        name: r[COL.name],
+        grade: String(r[COL.grade]).replace(/\D/g, ''),
+        region: r[COL.region],
+        school: r[COL.school],
+        book: r[COL.book],
+        guardian: r[COL.guardian],
+        phoneMasked: maskPhone_(r[COL.phone]),
+        emailMasked: maskEmail_(r[COL.email]),
+        fileName: r[COL.fileName]
+      };
+    })
+  };
+}
+
+function update_(b) {
+  var cache = CacheService.getScriptCache();
+  var allowed = JSON.parse(cache.get('ed_' + String(b.editToken || '')) || '[]');
+  var receiptNo = String(b.receiptNo || '');
+  if (allowed.indexOf(receiptNo) < 0) throw new Error('확인 시간이 지났습니다. 이름과 휴대전화 뒷 4자리로 다시 확인해 주세요.');
+
+  var s = getSettings_();
+  if (!isOpen_(s)) throw new Error('접수 기간이 아니라서 수정할 수 없습니다.');
+
+  var d = {
+    name: clean_(b.name, 30),
+    grade: clean_(b.grade, 2),
+    region: clean_(b.region, 20),
+    school: clean_(b.school, 50),
+    book: clean_(b.book, 60),
+    guardian: clean_(b.guardian, 30),
+    phone: String(b.phone || '').replace(/[^0-9]/g, ''),
+    email: clean_(b.email, 100).toLowerCase()
+  };
+  if (!d.name || !d.guardian || !d.region || !d.school || !d.book) throw new Error('필수 항목을 모두 입력해 주세요.');
+  if (!/^[1-6]$/.test(d.grade)) throw new Error('학년을 선택해 주세요.');
+  if (d.phone && !/^01[016789][0-9]{7,8}$/.test(d.phone)) throw new Error('보호자 휴대전화 번호를 확인해 주세요.');
+  if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) throw new Error('보호자 이메일 주소를 확인해 주세요.');
+
+  var f = b.file || null, bytes = null, ext = '';
+  if (f && f.data) {
+    ext = String(f.name || '').split('.').pop().toLowerCase();
+    if (ALLOWED_EXT.indexOf(ext) < 0) throw new Error('작품은 한글(HWP, HWPX) 파일로 제출해 주세요.');
+    bytes = Utilities.base64Decode(f.data);
+    var maxMB = Number(s.maxFileMB) || 10;
+    if (bytes.length > maxMB * 1024 * 1024) throw new Error('작품 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
+  }
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ENTRIES);
+    var n = sh.getLastRow();
+    var ids = n >= 2 ? sh.getRange(2, 1, n - 1, 1).getDisplayValues() : [];
+    var rowIdx = -1;
+    for (var i = 0; i < ids.length; i++) if (ids[i][0] === receiptNo) { rowIdx = i + 2; break; }
+    if (rowIdx < 0) throw new Error('접수를 찾지 못했습니다.');
+    var old = sh.getRange(rowIdx, 1, 1, ENTRY_HEADERS.length).getDisplayValues()[0];
+
+    var phoneFmt = d.phone ? d.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3') : old[COL.phone];
+    var email = d.email || old[COL.email];
+    var level = Number(d.grade) <= 3 ? '저학년' : '고학년';
+    var baseName = [d.region, d.school, d.name, d.book].join('_').replace(/[\\/:*?"<>|]/g, '');
+    var fileName = old[COL.fileName], fileUrl = old[COL.fileUrl];
+    var oldFile = null;
+    var m = /\/d\/([^/]+)/.exec(fileUrl);
+    if (m) { try { oldFile = DriveApp.getFileById(m[1]); } catch (e) { oldFile = null; } }
+
+    if (bytes) {
+      // 새 작품 파일을 올리고, 예전 파일은 휴지통으로 보냅니다
+      var file = DriveApp.getFolderById(s.folderId).createFile(Utilities.newBlob(bytes, 'application/octet-stream', receiptNo + '_' + baseName + '.' + ext));
+      if (oldFile) oldFile.setTrashed(true);
+      fileName = file.getName();
+      fileUrl = file.getUrl();
+    } else if (oldFile) {
+      // 이름·학교·도서가 바뀌면 파일 제목도 맞춰 바꿉니다
+      var oldExt = String(fileName).split('.').pop();
+      oldFile.setName(receiptNo + '_' + baseName + '.' + oldExt);
+      fileName = oldFile.getName();
+    }
+
+    var stamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
+    var vals = [d.name, d.grade + '학년', level, d.region, d.school, d.book, d.guardian, phoneFmt, email, fileName, fileUrl].map(noFormula_);
+    sh.getRange(rowIdx, COL.name + 1, 1, vals.length).setNumberFormat('@').setValues([vals]);
+    sh.getRange(rowIdx, COL.edited + 1).setNumberFormat('@').setValue(stamp);
+  } finally {
+    lock.releaseLock();
+  }
+
+  d.receiptNo = receiptNo;
+  d.level = level;
+  d.phoneFmt = phoneFmt;
+  d.email = email;
+  d.fileName = fileName.replace(/^R\d+_/, '');
+  d.fileUrl = fileUrl;
+  sendMails_(s, d, true);
+  return { ok: true, receiptNo: receiptNo };
+}
+
+function entryRows_() {
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ENTRIES);
+  var n = sh.getLastRow();
+  if (n < 2) return [];
+  return sh.getRange(2, 1, n - 1, ENTRY_HEADERS.length).getDisplayValues();
+}
+
+function isOpen_(s) {
+  var now = new Date(), openAt = parseKst_(s.openAt), deadline = parseKst_(s.deadline);
+  return !(openAt && now < openAt) && !(deadline && now > deadline);
+}
+
+function maskPhone_(p) {
+  var d = String(p).replace(/\D/g, '');
+  return d.length >= 10 ? d.slice(0, 3) + '-****-' + d.slice(-4) : '****';
+}
+
+function maskEmail_(e) {
+  var parts = String(e).split('@');
+  if (parts.length !== 2) return '***';
+  return parts[0].slice(0, 1) + '***@' + parts[1];
+}
+
+function digestHex_(s) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, s, Utilities.Charset.UTF_8)
+    .map(function (b) { return ('0' + (b & 0xff).toString(16)).slice(-2); }).join('');
 }
 
 /* ------------------------------------------------------------------ */
