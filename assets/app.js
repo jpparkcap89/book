@@ -614,7 +614,7 @@
   })();
 
   /* ================= 접수 폼 ================= */
-  var sending = false, editing = null, startEdit = function () {}, endEdit = function () {};
+  var sending = false, editing = null, startEntryEdit = function () {}, endEntryEdit = function () {};
   (function () {
     var form = $('#applyForm'), msg = $('#formMsg'), phone = $('#phone');
     phone.addEventListener('input', function () {
@@ -669,7 +669,7 @@
         note.done('ok', ed ? '수정이 완료되었습니다' : '접수가 완료되었습니다', '접수번호 ' + res.receiptNo);
         $('#doneTitle').textContent = ed ? '수정이 완료되었습니다!' : '접수가 완료되었습니다!';
         $('#receiptNo').textContent = res.receiptNo;
-        endEdit(true);
+        endEntryEdit(true);
         form.style.display = 'none';
         $('#doneBox').classList.add('show');
         $('#apply').scrollIntoView();
@@ -693,7 +693,7 @@
 
     /* ---------- 수정 모드 ---------- */
     var HINT = { phone: $('#phoneHint').textContent, email: $('#emailHint').textContent };
-    startEdit = function (token, en) {
+    startEntryEdit = function (token, en) {
       editing = { token: token, receiptNo: en.receiptNo };
       form.reset();
       upload.reset();
@@ -720,7 +720,7 @@
       renderStatus();
       $('#editBanner').scrollIntoView({ block: 'center' });
     };
-    endEdit = function (keepFormHidden) {
+    endEntryEdit = function (keepFormHidden) {
       if (!editing) return;
       editing = null;
       form.classList.remove('editing');
@@ -735,7 +735,7 @@
       if (!keepFormHidden) msg.className = 'form-msg';
       renderStatus();
     };
-    $('#editCancel').addEventListener('click', function () { endEdit(); toast('info', '수정을 취소했어요'); });
+    $('#editCancel').addEventListener('click', function () { endEntryEdit(); toast('info', '수정을 취소했어요'); });
   })();
 
   /* ================= 접수 확인 (학생 이름 + 휴대전화 뒷 4자리) ================= */
@@ -768,7 +768,7 @@
             (res.canEdit ? '<button type="button" class="btn primary small" data-i="' + i + '">✏️ 수정하기</button>' : '') + '</li>';
         }).join('');
         $$('button[data-i]', list).forEach(function (b) {
-          b.addEventListener('click', function () { startEdit(res.editToken, res.entries[Number(b.getAttribute('data-i'))]); });
+          b.addEventListener('click', function () { startEntryEdit(res.editToken, res.entries[Number(b.getAttribute('data-i'))]); });
         });
       }).catch(function (err) {
         msg.className = 'form-msg err';
@@ -882,7 +882,7 @@
       pen.setAttribute('aria-label', '이 내용 고치기');
       pen.textContent = '✏️';
       pen.setAttribute('contenteditable', 'false');
-      pen.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); startEdit(el); });
+      pen.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); startInlineEdit(el); });
       el.appendChild(pen);
     });
   }
@@ -891,7 +891,7 @@
     $$('.edit-pen, .edit-bar', c).forEach(function (n) { n.remove(); });
     return sanitize(c.innerHTML).trim();
   }
-  function startEdit(el) {
+  function startInlineEdit(el) {
     if (el.getAttribute('contenteditable') === 'true') return;
     var before = cleanHtml(el);
     el.setAttribute('contenteditable', 'true');
