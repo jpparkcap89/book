@@ -220,12 +220,14 @@ function apply_(b) {
   var maxMB = Number(s.maxFileMB) || 10;
   if (bytes.length > maxMB * 1024 * 1024) throw new Error('작품 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
 
-  var cf = b.consentFile || {};
-  var cext = String(cf.name || '').split('.').pop().toLowerCase();
-  if (!cf.data) throw new Error('작성한 개인정보 동의서를 첨부해 주세요.');
-  if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 동의서는 한글, PDF, 사진(JPG, PNG) 파일로 올려 주세요.');
-  var cbytes = Utilities.base64Decode(cf.data);
-  if (cbytes.length > maxMB * 1024 * 1024) throw new Error('개인정보 동의서는 ' + maxMB + 'MB 이하로 올려 주세요.');
+  // 동의서는 출품 양식 안에 들어 있습니다. 따로 보낸 동의서 파일이 있을 때만 함께 저장합니다
+  var cf = b.consentFile || {}, cbytes = null, cext = '';
+  if (cf.data) {
+    cext = String(cf.name || '').split('.').pop().toLowerCase();
+    if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 동의서는 한글, PDF, 사진(JPG, PNG) 파일로 올려 주세요.');
+    cbytes = Utilities.base64Decode(cf.data);
+    if (cbytes.length > maxMB * 1024 * 1024) throw new Error('개인정보 동의서는 ' + maxMB + 'MB 이하로 올려 주세요.');
+  }
 
   d.phoneFmt = d.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3');
   d.level = Number(d.grade) <= 3 ? '저학년' : '고학년';
@@ -243,13 +245,13 @@ function apply_(b) {
     var folder = DriveApp.getFolderById(s.folderId);
     var file = folder.createFile(blob);
     fileUrl = file.getUrl();
-    var cfile = folder.createFile(Utilities.newBlob(cbytes, 'application/octet-stream', receiptNo + '_동의서_' + d.name + '.' + cext));
+    var cfile = cbytes ? folder.createFile(Utilities.newBlob(cbytes, 'application/octet-stream', receiptNo + '_동의서_' + d.name + '.' + cext)) : null;
 
     var stamp = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
     var row = [
       receiptNo, stamp, d.name, d.grade + '학년', d.level, d.region, d.school, d.book,
       d.guardian, d.phoneFmt, d.email, file.getName(), fileUrl,
-      '동의', '동의', '동의', stamp, '', cfile.getName(), cfile.getUrl()
+      '동의', '동의', '동의', stamp, '', cfile ? cfile.getName() : '', cfile ? cfile.getUrl() : ''
     ].map(noFormula_);
     var r = sh.getLastRow() + 1;
     sh.getRange(r, 1, 1, row.length).setNumberFormat('@').setValues([row]);
@@ -260,8 +262,8 @@ function apply_(b) {
   d.receiptNo = receiptNo;
   d.fileName = fileName;
   d.fileUrl = fileUrl;
-  d.consentName = cfile.getName().replace(/^R\d+_/, '');
-  d.consentUrl = cfile.getUrl();
+  d.consentName = cfile ? cfile.getName().replace(/^R\d+_/, '') : '';
+  d.consentUrl = cfile ? cfile.getUrl() : '';
   sendMails_(s, d);
 
   return { ok: true, receiptNo: receiptNo };
@@ -281,9 +283,8 @@ function sendMails_(s, d, edited) {
     ['보호자', d.guardian],
     ['휴대전화', d.phoneFmt],
     ['이메일', d.email],
-    ['작품 파일', d.fileName],
-    ['개인정보 동의서', d.consentName || '-']
-  ];
+    ['출품 양식 파일', d.fileName]
+  ].concat(d.consentName ? [['개인정보 동의서', d.consentName]] : []);
   var table = '<table style="border-collapse:collapse;font-size:14px">' + rows.map(function (r) {
     return '<tr><th style="text-align:left;padding:6px 12px;background:#eef6ea;border:1px solid #d5e6cd">' + esc_(r[0]) +
       '</th><td style="padding:6px 12px;border:1px solid #d5e6cd">' + esc_(r[1]) + '</td></tr>';

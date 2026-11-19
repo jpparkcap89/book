@@ -709,7 +709,8 @@
     };
   }
   var upload = makeUpload('#upload', /\.(hwp|hwpx)$/i, '한글(HWP, HWPX) 파일만 올릴 수 있어요');
-  var consentUpload = makeUpload('#consentUpload', /\.(hwp|hwpx|pdf|jpe?g|png)$/i, '한글, PDF, 사진(JPG, PNG) 파일만 올릴 수 있어요');
+  // 신청서·동의서·독후감이 한 파일(출품 양식)이라 따로 받는 동의서 칸은 없습니다
+  var consentUpload = { get: function () { return null; }, busy: function () { return false; }, reset: function () {}, focus: function () {} };
 
   /* ================= #068 끝까지 읽고 동의하는 약관 ================= */
   var consent = (function () {
@@ -786,10 +787,8 @@
       if ((!ed || email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('보호자 이메일 주소를 확인해 주세요.', f.email);
       if (upload.busy()) return fail('작품 파일을 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
       var file = upload.get();
-      if (!ed && !file) { upload.focus(); return fail('작품 파일을 올려 주세요.'); }
-      if (consentUpload.busy()) return fail('개인정보 동의서를 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
+      if (!ed && !file) { upload.focus(); return fail('작성한 출품 양식 파일을 올려 주세요.'); }
       var cfile = consentUpload.get();
-      if (!ed && !cfile) { consentUpload.focus(); return fail('작성한 개인정보 동의서를 첨부해 주세요.'); }
       if (!ed && !consent.ok()) { consent.focus(); return fail('필수 동의 항목 3개에 모두 체크해 주세요.'); }
       if (!API) return fail('접수 서버가 아직 연결되지 않았습니다. 잠시 뒤에 다시 시도해 주세요.');
 
@@ -1027,7 +1026,6 @@
     $('#stToday').textContent = st.today != null ? st.today : '-';
     $('#stLow').textContent = st.low != null ? st.low : '-';
     $('#stHigh').textContent = st.high != null ? st.high : '-';
-    $('#stNoConsent').textContent = st.noConsent ? '⚠️ 동의서가 없는 접수 ' + st.noConsent + '건' : '';
     var L = res.links || {};
     [['#admFolder', L.folder], ['#admSheet', L.sheet], ['#admScript', L.script]].forEach(function (x) {
       var a = $(x[0]);
