@@ -347,3 +347,9 @@ dialog.lightbox img { width: 100%; height: auto; border-radius: 14px; margin-top
   .poster-card .actions { gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .poster-thumb, dialog.lightbox[open] { transition: none; animation: none; } }
+
+/* 포스터 메뉴 */
+.poster-page { max-width: 640px; margin-inline: auto; text-align: center; }
+.poster-page .poster-thumb { width: min(480px, 100%); margin: 0 auto 22px; }
+.poster-page .poster-thumb:hover { transform: translateY(-4px); }
+.poster-page .poster-thumb .zoom { width: 44px; height: 44px; font-size: 19px; right: 12px; bottom: 12px; }
