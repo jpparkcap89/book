@@ -406,7 +406,7 @@
     BOOKS.forEach(function (b) {
       var o = document.createElement('option');
       o.value = b[0];
-      o.textContent = b[0] + ' (' + b[2] + ')';
+      o.textContent = b[0] + ' (' + b[1].split(' 글')[0] + ' 저)';
       sel.appendChild(o);
     });
   })();
