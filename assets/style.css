@@ -402,3 +402,13 @@ footer .icon-btn { width: 32px; height: 32px; font-size: 15px; margin-left: 2px;
 .link-list .btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
 .list-title { margin: 0 0 12px; font-size: 20px; font-weight: 800; }
 @media (max-width: 820px) { .admin-grid { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* 접수 삭제 */
+.del-btn { background: color-mix(in srgb, var(--ux-danger) 12%, #fff); color: #b4233f; border: 1px solid color-mix(in srgb, var(--ux-danger) 30%, transparent); }
+.del-btn:hover:not(:disabled) { background: var(--ux-danger); color: #fff; }
+.del-btn:disabled { opacity: .45; }
+table.entries th.ck, table.entries td.ck { width: 36px; text-align: center; }
+table.entries input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+.row-del { border: 0; background: none; cursor: pointer; font-size: 17px; padding: 4px 8px; border-radius: 8px; }
+.row-del:hover { background: color-mix(in srgb, var(--ux-danger) 14%, transparent); }
+table.entries tr.is-checked td { background: rgba(59, 99, 246, .06); }

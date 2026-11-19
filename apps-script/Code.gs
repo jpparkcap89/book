@@ -134,6 +134,7 @@ function doPost(e) {
       case 'update': return json_(update_(body));
       case 'adminInfo': return json_(adminInfo_(body));
       case 'saveSettings': return json_(saveSettings_(body));
+      case 'deleteEntries': return json_(deleteEntries_(body));
       default: return json_({ ok: false, error: '알 수 없는 요청입니다.' });
     }
   } catch (err) {
@@ -237,7 +238,7 @@ function apply_(b) {
   var receiptNo, fileUrl, fileName;
   try {
     var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ENTRIES);
-    receiptNo = 'R' + Utilities.formatString('%04d', sh.getLastRow()); // 헤더 1줄 → 첫 접수 R0001
+    receiptNo = nextReceiptNo_(sh); // 지금 있는 가장 큰 번호 + 1 (모두 지우면 R0001부터)
 
     // 출품 규정의 파일 제목: 지역_학교명_학생명_도서명
     fileName = [d.region, d.school, d.name, d.book].join('_').replace(/[\\/:*?"<>|]/g, '') + '.' + ext;
@@ -488,7 +489,8 @@ function entryRows_() {
   var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ENTRIES);
   var n = sh.getLastRow();
   if (n < 2) return [];
-  return sh.getRange(2, 1, n - 1, ENTRY_HEADERS.length).getDisplayValues();
+  return sh.getRange(2, 1, n - 1, ENTRY_HEADERS.length).getDisplayValues()
+    .filter(function (r) { return String(r[COL.no]).trim() !== ''; });
 }
 
 function acceptMode_(s) {
@@ -655,8 +657,49 @@ function listEntries_(b) {
   var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ENTRIES);
   var n = sh.getLastRow();
   if (n < 2) return { ok: true, headers: ENTRY_HEADERS, rows: [] };
-  var rows = sh.getRange(2, 1, n - 1, ENTRY_HEADERS.length).getDisplayValues();
+  var rows = sh.getRange(2, 1, n - 1, ENTRY_HEADERS.length).getDisplayValues()
+    .filter(function (r) { return String(r[COL.no]).trim() !== ''; }); // 비어 있는 줄은 빼고 보냅니다
   return { ok: true, headers: ENTRY_HEADERS, rows: rows };
+}
+
+/** 접수 삭제: 시트에서 줄을 지우고, 작품·동의서 파일은 드라이브 휴지통으로 보냅니다(30일 안에 되살릴 수 있음). */
+function deleteEntries_(b) {
+  requireAdmin_(b);
+  var want = (b.receiptNos || []).map(String).filter(function (x) { return /^R\d+$/.test(x); });
+  if (!want.length) throw new Error('삭제할 접수를 골라 주세요.');
+  if (want.length > 200) throw new Error('한 번에 200건까지 지울 수 있어요.');
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  var deleted = [], trashed = 0;
+  try {
+    var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ENTRIES);
+    var n = sh.getLastRow();
+    if (n < 2) return { ok: true, deleted: [], trashed: 0 };
+    var rows = sh.getRange(2, 1, n - 1, ENTRY_HEADERS.length).getDisplayValues();
+    // 아래 줄부터 지워야 위쪽 줄 번호가 밀리지 않습니다
+    for (var i = rows.length - 1; i >= 0; i--) {
+      var r = rows[i];
+      if (want.indexOf(String(r[COL.no])) < 0) continue;
+      [r[COL.fileUrl], r[COL.consentUrl]].forEach(function (u) {
+        var m = /\/d\/([^/]+)/.exec(u || '');
+        if (m) { try { DriveApp.getFileById(m[1]).setTrashed(true); trashed++; } catch (e) { console.error('파일 휴지통 이동 실패', u, e); } }
+      });
+      sh.deleteRow(i + 2);
+      deleted.push(String(r[COL.no]));
+    }
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true, deleted: deleted, trashed: trashed };
+}
+
+function nextReceiptNo_(sh) {
+  var n = sh.getLastRow(), max = 0;
+  if (n >= 2) sh.getRange(2, 1, n - 1, 1).getDisplayValues().forEach(function (r) {
+    var m = /^R(\d+)$/.exec(String(r[0]).trim());
+    if (m) max = Math.max(max, Number(m[1]));
+  });
+  return 'R' + Utilities.formatString('%04d', max + 1);
 }
 
 /* ------------------------------------------------------------------ */

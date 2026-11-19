@@ -1142,12 +1142,12 @@
 
   var entries = [];
   function loadEntries() {
-    $('#entryBody').innerHTML = '<tr><td colspan="10">불러오는 중…</td></tr>';
+    $('#entryBody').innerHTML = '<tr><td colspan="12">불러오는 중…</td></tr>';
     apiPost({ action: 'list', token: token }).then(function (res) {
       entries = res.rows || [];
       renderEntries();
     }).catch(function (err) {
-      if (!authError(err)) $('#entryBody').innerHTML = '<tr><td colspan="10">' + esc(err.message) + '</td></tr>';
+      if (!authError(err)) $('#entryBody').innerHTML = '<tr><td colspan="12">' + esc(err.message) + '</td></tr>';
     });
   }
   function renderEntries() {
@@ -1157,15 +1157,22 @@
       return r.join(' ').toLowerCase().indexOf(q) >= 0 || (qd && String(r[9]).replace(/\D/g, '').indexOf(qd) >= 0);
     });
     $('#entryCount').textContent = '총 ' + entries.length + '건' + (q ? ' · 검색 ' + rows.length + '건' : '');
+    // 지금 목록에 없는 번호는 선택에서 뺍니다
+    var present = entries.map(function (r) { return r[0]; });
+    Object.keys(picked).forEach(function (k) { if (present.indexOf(k) < 0) delete picked[k]; });
+    syncPicked();
     if (!rows.length) {
-      $('#entryBody').innerHTML = '<tr><td colspan="10">' + (entries.length ? '찾는 접수가 없어요.' : '아직 접수가 없어요.') + '</td></tr>';
+      $('#entryBody').innerHTML = '<tr><td colspan="12">' + (entries.length ? '찾는 접수가 없어요.' : '아직 접수가 없어요.') + '</td></tr>';
+      $('#entryAll').checked = false;
       return;
     }
     $('#entryBody').innerHTML = rows.map(function (r) {
       var tel = String(r[9]).replace(/\D/g, '');
       var fileLink = /^https:\/\//.test(r[12]) ? '<a href="' + esc(r[12]) + '" target="_blank" rel="noopener">📄 작품</a>' : esc(r[11]);
       if (/^https:\/\//.test(r[19] || '')) fileLink += ' <a href="' + esc(r[19]) + '" target="_blank" rel="noopener">📝 동의서</a>';
-      return '<tr>' +
+      var on = !!picked[r[0]];
+      return '<tr' + (on ? ' class="is-checked"' : '') + '>' +
+        '<td class="ck"><input type="checkbox" data-no="' + esc(r[0]) + '"' + (on ? ' checked' : '') + ' aria-label="' + esc(r[0]) + ' ' + esc(r[2]) + ' 고르기"></td>' +
         '<td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + (r[17] ? '<br><small>✏️ 수정 ' + esc(r[17]) + '</small>' : '') + '</td><td><strong>' + esc(r[2]) + '</strong></td>' +
         '<td>' + esc(r[3]) + ' <small>(' + esc(r[4]) + ')</small></td>' +
         '<td>' + esc(r[5]) + ' · ' + esc(r[6]) + '</td><td>' + esc(r[7]) + '</td><td>' + esc(r[8]) + '</td>' +
@@ -1173,11 +1180,66 @@
           ' <a class="icon-btn" href="tel:' + tel + '" title="전화 걸기" aria-label="' + esc(r[8]) + '에게 전화">📞</a>' +
           '<a class="icon-btn" href="sms:' + tel + '" title="문자 보내기" aria-label="' + esc(r[8]) + '에게 문자">💬</a></td>' +
         '<td><a href="mailto:' + esc(r[10]) + '">' + esc(r[10]) + '</a></td>' +
-        '<td>' + fileLink + '</td></tr>';
+        '<td>' + fileLink + '</td>' +
+        '<td><button type="button" class="row-del" data-del="' + esc(r[0]) + '" title="이 접수 삭제" aria-label="' + esc(r[0]) + ' ' + esc(r[2]) + ' 삭제">🗑️</button></td></tr>';
     }).join('');
+    var boxes = $$('#entryBody input[data-no]');
+    $('#entryAll').checked = boxes.length > 0 && boxes.every(function (b) { return b.checked; });
   }
   $('#reloadEntries').addEventListener('click', loadEntries);
   $('#entrySearch').addEventListener('input', renderEntries);
+
+  /* ---------- 접수 삭제 ---------- */
+  var picked = {};
+  function syncPicked() {
+    var n = Object.keys(picked).length;
+    var b = $('#deleteSelected');
+    b.disabled = !n;
+    b.textContent = n ? '🗑️ 선택 삭제 (' + n + '건)' : '🗑️ 선택 삭제';
+  }
+  $('#entryBody').addEventListener('change', function (e) {
+    var c = e.target.closest('input[data-no]');
+    if (!c) return;
+    if (c.checked) picked[c.getAttribute('data-no')] = true; else delete picked[c.getAttribute('data-no')];
+    c.closest('tr').classList.toggle('is-checked', c.checked);
+    var boxes = $$('#entryBody input[data-no]');
+    $('#entryAll').checked = boxes.every(function (b) { return b.checked; });
+    syncPicked();
+  });
+  $('#entryAll').addEventListener('change', function () {
+    var v = this.checked;
+    $$('#entryBody input[data-no]').forEach(function (c) {
+      c.checked = v;
+      if (v) picked[c.getAttribute('data-no')] = true; else delete picked[c.getAttribute('data-no')];
+      c.closest('tr').classList.toggle('is-checked', v);
+    });
+    syncPicked();
+  });
+  function deleteEntries(nos) {
+    var names = entries.filter(function (r) { return nos.indexOf(r[0]) >= 0; }).map(function (r) { return r[0] + ' ' + r[2]; });
+    var list = names.slice(0, 8).join('\n') + (names.length > 8 ? '\n… 외 ' + (names.length - 8) + '건' : '');
+    if (!confirm(names.length + '건을 삭제할까요?\n\n' + list + '\n\n시트에서 줄이 지워지고, 파일은 드라이브 휴지통으로 갑니다.')) return;
+    var note = toast('wait', names.length + '건을 지우고 있어요…');
+    $('#deleteSelected').disabled = true;
+    apiPost({ action: 'deleteEntries', token: token, receiptNos: nos }).then(function (res) {
+      nos.forEach(function (k) { delete picked[k]; });
+      note.done('ok', res.deleted.length + '건을 삭제했어요', '파일 ' + res.trashed + '개를 드라이브 휴지통으로 옮겼어요');
+      loadEntries();
+      loadAdmin();
+    }).catch(function (err) {
+      note.done('err', '삭제하지 못했어요', err.message);
+      authError(err);
+      syncPicked();
+    });
+  }
+  $('#entryBody').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-del]');
+    if (b) deleteEntries([b.getAttribute('data-del')]);
+  });
+  $('#deleteSelected').addEventListener('click', function () {
+    var nos = Object.keys(picked);
+    if (nos.length) deleteEntries(nos);
+  });
 
   /* ================= 시작 ================= */
   renderStatus();

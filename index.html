@@ -9,8 +9,8 @@
   <meta property="og:description" content="책 속 숲길을 걷고, 나만의 생각을 글로 남겨 보아요! 전국 초등학생 누구나 · 상장 받는 친구 37명">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-  <link rel="stylesheet" href="assets/style.css?v=20261119f">
-  <link rel="stylesheet" href="assets/lucian.css?v=20261119f">
+  <link rel="stylesheet" href="assets/style.css?v=20261119g">
+  <link rel="stylesheet" href="assets/lucian.css?v=20261119g">
 </head>
 <body>
 <div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -424,12 +424,14 @@
         <div class="entries-tools">
           <input class="field" type="text" id="entrySearch" placeholder="이름, 학교, 전화번호로 찾기">
           <button type="button" class="btn ghost small" id="reloadEntries">🔄 새로고침</button>
+          <button type="button" class="btn small del-btn" id="deleteSelected" disabled>🗑️ 선택 삭제</button>
           <span class="count" id="entryCount"></span>
         </div>
+        <p class="hint" style="margin:-4px 0 10px">삭제하면 시트에서 그 줄이 지워지고, 작품 파일은 드라이브 <strong>휴지통</strong>으로 가요. (휴지통에서 30일 안에 되살릴 수 있어요)</p>
         <div class="table-scroll">
           <table class="entries">
-            <thead><tr><th>접수번호</th><th>접수일시</th><th>학생</th><th>학년</th><th>지역·학교</th><th>도서</th><th>보호자</th><th>연락처</th><th>이메일</th><th>작품</th></tr></thead>
-            <tbody id="entryBody"><tr><td colspan="10">불러오는 중…</td></tr></tbody>
+            <thead><tr><th class="ck"><input type="checkbox" id="entryAll" aria-label="보이는 접수 모두 고르기"></th><th>접수번호</th><th>접수일시</th><th>학생</th><th>학년</th><th>지역·학교</th><th>도서</th><th>보호자</th><th>연락처</th><th>이메일</th><th>작품</th><th>삭제</th></tr></thead>
+            <tbody id="entryBody"><tr><td colspan="12">불러오는 중…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -481,7 +483,7 @@
   </div>
 </div>
 
-<script src="config.js?v=20261119f"></script>
-<script src="assets/app.js?v=20261119f"></script>
+<script src="config.js?v=20261119g"></script>
+<script src="assets/app.js?v=20261119g"></script>
 </body>
 </html>
