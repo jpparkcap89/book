@@ -515,7 +515,16 @@
     return kst(target) - kst(new Date());
   }
   function fmtDate(d) { var k = new Date(d.getTime() + 9 * 3600000); return (k.getUTCMonth() + 1) + '월 ' + k.getUTCDate() + '일'; }
-  function phase() { var now = new Date(); return now < period.openAt ? 'soon' : now > period.deadline ? 'closed' : 'open'; }
+  function phase() {
+    // 관리자가 '지금 열기/닫기'를 고르면 기간보다 그것을 따릅니다
+    if (period.mode === 'open') return 'open';
+    if (period.mode === 'closed') return 'paused';
+    var now = new Date(); return now < period.openAt ? 'soon' : now > period.deadline ? 'closed' : 'open';
+  }
+  function fmtLong(d) {
+    var k = new Date(d.getTime() + 9 * 3600000), p = function (x) { return ('0' + x).slice(-2); };
+    return k.getUTCFullYear() + '년 ' + (k.getUTCMonth() + 1) + '월 ' + k.getUTCDate() + '일 ' + p(k.getUTCHours()) + ':' + p(k.getUTCMinutes());
+  }
 
   /* ================= #252 반짝 지나가며 펼쳐지는 공지 알약 ================= */
   var notice = (function () {
@@ -564,15 +573,18 @@
     } else if (p === 'open') {
       var d2 = dday(period.deadline);
       notice.set('접수 중', [(d2 > 0 ? '마감까지 D-' + d2 + ' · 지금 접수하세요' : '오늘 16시에 마감해요!'), '상장 받는 친구 37명!', '추천 도서 25권 중 1권 골라 읽기']);
+    } else if (p === 'paused') {
+      notice.set('접수 중지', ['지금은 접수를 받지 않아요', '자세한 안내는 문자로 문의해 주세요', '추천 도서 25권 중 1권 골라 읽기']);
     } else {
       notice.set('마감', ['접수가 마감되었어요', '수상자 발표 2월 4일(목) 16시', '참여해 주셔서 고맙습니다']);
     }
     if (p !== 'open') {
       btn.disabled = true;
-      btn.textContent = p === 'soon' ? '📅 ' + fmtDate(period.openAt) + '부터 접수할 수 있어요' : '접수가 마감되었습니다';
+      btn.textContent = p === 'soon' ? '📅 ' + fmtDate(period.openAt) + '부터 접수할 수 있어요' : p === 'paused' ? '지금은 접수를 받지 않아요' : '접수가 마감되었습니다';
       msg.className = 'form-msg info';
       msg.textContent = p === 'soon'
-        ? '접수 기간: 2026년 12월 10일(목) ~ 2027년 1월 20일(수) 16시. 기간이 되면 이 화면에서 바로 접수할 수 있어요.'
+        ? '접수 기간: ' + fmtLong(period.openAt) + ' ~ ' + fmtLong(period.deadline) + '. 기간이 되면 이 화면에서 바로 접수할 수 있어요.'
+        : p === 'paused' ? '지금은 접수를 받지 않습니다. 궁금한 점은 문자로 문의해 주세요.'
         : '접수 기간이 끝났습니다. 참여해 주셔서 고맙습니다.';
     } else if (!sending) {
       btn.disabled = false;
@@ -614,6 +626,7 @@
       if (!res || !res.ok) return;
       if (res.openAt) period.openAt = new Date(res.openAt);
       if (res.deadline) period.deadline = new Date(res.deadline);
+      period.mode = res.acceptMode || 'auto';
       if (res.maxFileMB) { MAX_MB = res.maxFileMB; $('#uploadHint').textContent = '한글 문서(HWP, HWPX) · 최대 ' + MAX_MB + 'MB'; }
       setDownloads({ form: res.formUrl, consent: res.consentUrl });
       var c = res.content || {};
@@ -987,7 +1000,82 @@
     nav.setAdmin(true);
     addPens();
     loadEntries();
+    loadAdmin();
   }
+
+  /* ---------- 관리 페이지 ---------- */
+  function toLocalInput(s) {
+    // 설정 시트의 '2026-12-10 0:00' → 입력칸의 '2026-12-10T00:00'
+    var m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/.exec(String(s || '').trim());
+    if (!m) return '';
+    var p = function (x) { return ('0' + (x || 0)).slice(-2); };
+    return m[1] + '-' + p(m[2]) + '-' + p(m[3]) + 'T' + p(m[4]) + ':' + p(m[5]);
+  }
+  function showAdmin(res) {
+    var mode = res.acceptMode || 'auto';
+    $$('#adminPanel .seg button').forEach(function (b) { b.setAttribute('aria-checked', String(b.getAttribute('data-mode') === mode)); });
+    var dot = $('#admDot');
+    dot.className = 'dot ' + (res.open ? 'on' : 'off');
+    var why = mode === 'open' ? ' (지금 열기)' : mode === 'closed' ? ' (지금 닫기)' : ' (기간에 따라)';
+    $('#admState').textContent = (res.open ? '접수 받는 중' : '접수 받지 않는 중') + why;
+    $('#admOpen').value = toLocalInput(res.openAt);
+    $('#admDeadline').value = toLocalInput(res.deadline);
+    $('#admConsentUrl').value = res.consentUrl || '';
+    $('#admFormUrl').value = res.formUrl || '';
+    var st = res.stats || {};
+    $('#stTotal').textContent = st.total != null ? st.total : '-';
+    $('#stToday').textContent = st.today != null ? st.today : '-';
+    $('#stLow').textContent = st.low != null ? st.low : '-';
+    $('#stHigh').textContent = st.high != null ? st.high : '-';
+    $('#stNoConsent').textContent = st.noConsent ? '⚠️ 동의서가 없는 접수 ' + st.noConsent + '건' : '';
+    var L = res.links || {};
+    [['#admFolder', L.folder], ['#admSheet', L.sheet], ['#admScript', L.script]].forEach(function (x) {
+      var a = $(x[0]);
+      if (/^https:\/\//.test(x[1] || '')) { a.href = x[1]; a.removeAttribute('aria-disabled'); }
+      else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); }
+    });
+    // 공개 화면도 바로 맞춥니다
+    period.mode = mode;
+    var o = res.openAt && toLocalInput(res.openAt), d = res.deadline && toLocalInput(res.deadline);
+    if (o) period.openAt = new Date(o + ':00+09:00');
+    if (d) period.deadline = new Date(d + ':00+09:00');
+    setDownloads({ form: res.formUrl, consent: res.consentUrl });
+    renderStatus();
+  }
+  function loadAdmin() {
+    if (!token || !API) return;
+    apiPost({ action: 'adminInfo', token: token }).then(showAdmin).catch(function (err) { if (!authError(err)) toast('err', '관리 정보를 불러오지 못했어요', err.message); });
+  }
+  function saveSettings(values, okMsg, btn) {
+    if (btn) btn.disabled = true;
+    return apiPost({ action: 'saveSettings', token: token, values: values }).then(function (res) {
+      showAdmin(res);
+      toast('ok', okMsg);
+    }).catch(function (err) {
+      if (!authError(err)) toast('err', '저장하지 못했어요', err.message);
+    }).then(function () { if (btn) btn.disabled = false; });
+  }
+  $$('#adminPanel .seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var mode = b.getAttribute('data-mode');
+      if (b.getAttribute('aria-checked') === 'true') return;
+      if (mode === 'open' && !confirm('기간과 관계없이 지금 바로 접수를 받을까요?')) return;
+      if (mode === 'closed' && !confirm('기간과 관계없이 지금 바로 접수를 닫을까요?')) return;
+      var all = $$('#adminPanel .seg button');
+      all.forEach(function (x) { x.disabled = true; });
+      saveSettings({ acceptMode: mode }, mode === 'open' ? '접수를 열었어요' : mode === 'closed' ? '접수를 닫았어요' : '기간에 따라 열고 닫아요')
+        .then(function () { all.forEach(function (x) { x.disabled = false; }); });
+    });
+  });
+  $('#admSavePeriod').addEventListener('click', function () {
+    var o = $('#admOpen').value, d = $('#admDeadline').value;
+    if (!o || !d) { toast('err', '시작과 마감을 모두 입력해 주세요'); return; }
+    saveSettings({ openAt: o.replace('T', ' '), deadline: d.replace('T', ' ') }, '접수 기간을 저장했어요', this);
+  });
+  $('#admSaveLinks').addEventListener('click', function () {
+    saveSettings({ consentUrl: $('#admConsentUrl').value.trim(), formUrl: $('#admFormUrl').value.trim() }, '양식 주소를 저장했어요', this);
+  });
+  document.addEventListener('panelshown', function (e) { if (e.detail === 'entries' && document.body.classList.contains('admin')) { loadAdmin(); loadEntries(); } });
   function leaveAdmin() {
     token = null;
     store('bookAdminToken', null);

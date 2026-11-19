@@ -34,7 +34,8 @@ var DEFAULT_SETTINGS = [
   ['maxFileMB', '10', '작품 파일 최대 용량(MB)'],
   ['adminPhone', '010-5371-4818', '확인 메일에 적는 문자 문의 번호'],
   ['formUrl', '', '출품 양식(한글 파일) 내려받기 주소 (구글 드라이브 공유 링크)'],
-  ['consentUrl', '', '개인정보 수집·이용 동의서 내려받기 주소 (구글 드라이브 공유 링크)']
+  ['consentUrl', '', '개인정보 수집·이용 동의서 내려받기 주소 (구글 드라이브 공유 링크)'],
+  ['acceptMode', 'auto', '접수 받기: auto(기간에 따라) / open(지금 열기) / closed(지금 닫기)']
 ];
 
 var ALLOWED_EXT = ['hwp', 'hwpx'];
@@ -131,6 +132,8 @@ function doPost(e) {
       case 'list': return json_(listEntries_(body));
       case 'lookup': return json_(lookup_(body));
       case 'update': return json_(update_(body));
+      case 'adminInfo': return json_(adminInfo_(body));
+      case 'saveSettings': return json_(saveSettings_(body));
       default: return json_({ ok: false, error: '알 수 없는 요청입니다.' });
     }
   } catch (err) {
@@ -160,7 +163,9 @@ function publicContent_() {
     now: now.toISOString(),
     maxFileMB: Number(s.maxFileMB) || 10,
     formUrl: safeUrl_(s.formUrl),
-    consentUrl: safeUrl_(s.consentUrl)
+    consentUrl: safeUrl_(s.consentUrl),
+    acceptMode: acceptMode_(s),
+    open: isOpen_(s)
   };
 }
 
@@ -185,8 +190,10 @@ function apply_(b) {
   var now = new Date();
   var openAt = parseKst_(s.openAt);
   var deadline = parseKst_(s.deadline);
-  if (openAt && now < openAt) throw new Error('아직 접수 기간이 아닙니다. (' + s.openAt + '부터)');
-  if (deadline && now > deadline) throw new Error('접수가 마감되었습니다. (' + s.deadline + ' 마감)');
+  var mode = acceptMode_(s);
+  if (mode === 'closed') throw new Error('지금은 접수를 받지 않습니다.');
+  if (mode === 'auto' && openAt && now < openAt) throw new Error('아직 접수 기간이 아닙니다. (' + s.openAt + '부터)');
+  if (mode === 'auto' && deadline && now > deadline) throw new Error('접수가 마감되었습니다. (' + s.deadline + ' 마감)');
 
   var d = {
     name: clean_(b.name, 30),
@@ -483,9 +490,85 @@ function entryRows_() {
   return sh.getRange(2, 1, n - 1, ENTRY_HEADERS.length).getDisplayValues();
 }
 
+function acceptMode_(s) {
+  var m = String(s.acceptMode || 'auto').trim().toLowerCase();
+  return m === 'open' || m === 'closed' ? m : 'auto';
+}
+
 function isOpen_(s) {
+  var mode = acceptMode_(s);
+  if (mode === 'open') return true;
+  if (mode === 'closed') return false;
   var now = new Date(), openAt = parseKst_(s.openAt), deadline = parseKst_(s.deadline);
   return !(openAt && now < openAt) && !(deadline && now > deadline);
+}
+
+/* ------------------------------------------------------------------ */
+/*  관리 페이지                                                        */
+/* ------------------------------------------------------------------ */
+
+function adminInfo_(b) {
+  requireAdmin_(b);
+  var s = getSettings_();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var rows = entryRows_();
+  var today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  var stats = { total: rows.length, low: 0, high: 0, today: 0, noConsent: 0 };
+  rows.forEach(function (r) {
+    if (r[COL.level] === '저학년') stats.low++; else if (r[COL.level] === '고학년') stats.high++;
+    if (String(r[COL.date]).indexOf(today) === 0) stats.today++;
+    if (!r[COL.consentUrl]) stats.noConsent++;
+  });
+  var folderUrl = '';
+  try { if (s.folderId) folderUrl = DriveApp.getFolderById(s.folderId).getUrl(); } catch (e) { folderUrl = ''; }
+  return {
+    ok: true,
+    acceptMode: acceptMode_(s),
+    open: isOpen_(s),
+    openAt: s.openAt || '',
+    deadline: s.deadline || '',
+    consentUrl: s.consentUrl || '',
+    formUrl: s.formUrl || '',
+    maxFileMB: Number(s.maxFileMB) || 10,
+    adminMail: s.adminMail || '',
+    links: {
+      folder: folderUrl,
+      sheet: ss.getUrl(),
+      script: 'https://script.google.com/d/' + ScriptApp.getScriptId() + '/edit'
+    },
+    stats: stats
+  };
+}
+
+function saveSettings_(b) {
+  requireAdmin_(b);
+  var v = b.values || {};
+  var out = {};
+  if ('acceptMode' in v) {
+    var m = String(v.acceptMode);
+    if (['auto', 'open', 'closed'].indexOf(m) < 0) throw new Error('접수 상태 값이 올바르지 않습니다.');
+    out.acceptMode = m;
+  }
+  ['openAt', 'deadline'].forEach(function (k) {
+    if (!(k in v)) return;
+    var t = String(v[k]).trim().replace('T', ' ');
+    if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(t) || !parseKst_(t)) throw new Error('날짜 형식이 올바르지 않습니다. (예: 2026-12-10 00:00)');
+    out[k] = t;
+  });
+  if (out.openAt && out.deadline && parseKst_(out.openAt) >= parseKst_(out.deadline)) throw new Error('접수 시작이 마감보다 앞서야 합니다.');
+  ['consentUrl', 'formUrl'].forEach(function (k) {
+    if (!(k in v)) return;
+    var u = String(v[k]).trim();
+    if (u && !safeUrl_(u)) throw new Error('주소는 https:// 로 시작해야 합니다.');
+    out[k] = u;
+  });
+  if ('maxFileMB' in v) {
+    var mb = Number(v.maxFileMB);
+    if (!(mb >= 1 && mb <= 20)) throw new Error('파일 최대 용량은 1~20MB 사이로 정해 주세요.');
+    out.maxFileMB = String(Math.round(mb));
+  }
+  Object.keys(out).forEach(function (k) { setSetting_(k, out[k]); });
+  return adminInfo_(b);
 }
 
 function safeUrl_(u) {
