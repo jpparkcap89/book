@@ -18,10 +18,11 @@ var SHEET_ENTRIES = '접수목록';
 var ENTRY_HEADERS = [
   '접수번호', '접수일시', '학생 이름', '학년', '구분', '지역', '학교(소속)', '선택 도서',
   '보호자 성명', '보호자 휴대전화', '보호자 이메일', '작품 파일', '파일 링크',
-  '개인정보 동의', '작품 사용권 동의', '창작 서약', '동의 일시', '수정일시'
+  '개인정보 동의', '작품 사용권 동의', '창작 서약', '동의 일시', '수정일시',
+  '동의서 파일', '동의서 링크'
 ];
 // 접수목록 열 위치 (0부터)
-var COL = { no: 0, date: 1, name: 2, grade: 3, level: 4, region: 5, school: 6, book: 7, guardian: 8, phone: 9, email: 10, fileName: 11, fileUrl: 12, edited: 17 };
+var COL = { no: 0, date: 1, name: 2, grade: 3, level: 4, region: 5, school: 6, book: 7, guardian: 8, phone: 9, email: 10, fileName: 11, fileUrl: 12, edited: 17, consentName: 18, consentUrl: 19 };
 
 var DEFAULT_SETTINGS = [
   ['adminMail', '', '접수 알림을 받을 관리자 메일 주소'],
@@ -31,10 +32,13 @@ var DEFAULT_SETTINGS = [
   ['folderId', '', '작품 파일이 저장될 구글 드라이브 폴더 ID (setup()이 자동으로 채움)'],
   ['senderName', '숲속동화문학회', '메일 보낸 사람 이름'],
   ['maxFileMB', '10', '작품 파일 최대 용량(MB)'],
-  ['adminPhone', '010-5371-4818', '확인 메일에 적는 문자 문의 번호']
+  ['adminPhone', '010-5371-4818', '확인 메일에 적는 문자 문의 번호'],
+  ['formUrl', '', '출품 양식(한글 파일) 내려받기 주소 (구글 드라이브 공유 링크)'],
+  ['consentUrl', '', '개인정보 수집·이용 동의서 내려받기 주소 (구글 드라이브 공유 링크)']
 ];
 
 var ALLOWED_EXT = ['hwp', 'hwpx'];
+var CONSENT_EXT = ['hwp', 'hwpx', 'pdf', 'jpg', 'jpeg', 'png'];  // 서명한 동의서는 사진으로도 받습니다
 var TOKEN_HOURS = 6;
 var MAX_LOGIN_FAILS = 5;
 var MAX_LOOKUP_FAILS = 5;   // 같은 이름으로 1시간에 틀릴 수 있는 횟수
@@ -73,9 +77,14 @@ function setup() {
     et.appendRow(ENTRY_HEADERS);
     et.setFrozenRows(1);
     et.getRange(1, 1, 1, ENTRY_HEADERS.length).setFontWeight('bold').setBackground('#e8f3e3');
-    et.getRange('A:R').setNumberFormat('@');
-  } else if (et.getRange(1, ENTRY_HEADERS.length).getValue() === '') {
-    et.getRange(1, ENTRY_HEADERS.length).setValue(ENTRY_HEADERS[ENTRY_HEADERS.length - 1]).setFontWeight('bold').setBackground('#e8f3e3');
+    et.getRange('A:T').setNumberFormat('@');
+  } else {
+    // 새로 생긴 열의 머리글만 채웁니다
+    var head = et.getRange(1, 1, 1, ENTRY_HEADERS.length).getValues()[0];
+    ENTRY_HEADERS.forEach(function (name, i) {
+      if (head[i] === '') et.getRange(1, i + 1).setValue(name).setFontWeight('bold').setBackground('#e8f3e3');
+    });
+    et.getRange('A:T').setNumberFormat('@');
   }
 
   var s = getSettings_();
@@ -149,7 +158,9 @@ function publicContent_() {
     openAt: openAt ? openAt.toISOString() : null,
     deadline: deadline ? deadline.toISOString() : null,
     now: now.toISOString(),
-    maxFileMB: Number(s.maxFileMB) || 10
+    maxFileMB: Number(s.maxFileMB) || 10,
+    formUrl: safeUrl_(s.formUrl),
+    consentUrl: safeUrl_(s.consentUrl)
   };
 }
 
@@ -202,6 +213,13 @@ function apply_(b) {
   var maxMB = Number(s.maxFileMB) || 10;
   if (bytes.length > maxMB * 1024 * 1024) throw new Error('작품 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
 
+  var cf = b.consentFile || {};
+  var cext = String(cf.name || '').split('.').pop().toLowerCase();
+  if (!cf.data) throw new Error('작성한 개인정보 동의서를 첨부해 주세요.');
+  if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 동의서는 한글, PDF, 사진(JPG, PNG) 파일로 올려 주세요.');
+  var cbytes = Utilities.base64Decode(cf.data);
+  if (cbytes.length > maxMB * 1024 * 1024) throw new Error('개인정보 동의서는 ' + maxMB + 'MB 이하로 올려 주세요.');
+
   d.phoneFmt = d.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3');
   d.level = Number(d.grade) <= 3 ? '저학년' : '고학년';
 
@@ -218,12 +236,13 @@ function apply_(b) {
     var folder = DriveApp.getFolderById(s.folderId);
     var file = folder.createFile(blob);
     fileUrl = file.getUrl();
+    var cfile = folder.createFile(Utilities.newBlob(cbytes, 'application/octet-stream', receiptNo + '_동의서_' + d.name + '.' + cext));
 
     var stamp = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
     var row = [
       receiptNo, stamp, d.name, d.grade + '학년', d.level, d.region, d.school, d.book,
       d.guardian, d.phoneFmt, d.email, file.getName(), fileUrl,
-      '동의', '동의', '동의', stamp
+      '동의', '동의', '동의', stamp, '', cfile.getName(), cfile.getUrl()
     ].map(noFormula_);
     var r = sh.getLastRow() + 1;
     sh.getRange(r, 1, 1, row.length).setNumberFormat('@').setValues([row]);
@@ -234,6 +253,8 @@ function apply_(b) {
   d.receiptNo = receiptNo;
   d.fileName = fileName;
   d.fileUrl = fileUrl;
+  d.consentName = cfile.getName().replace(/^R\d+_/, '');
+  d.consentUrl = cfile.getUrl();
   sendMails_(s, d);
 
   return { ok: true, receiptNo: receiptNo };
@@ -253,7 +274,8 @@ function sendMails_(s, d, edited) {
     ['보호자', d.guardian],
     ['휴대전화', d.phoneFmt],
     ['이메일', d.email],
-    ['작품 파일', d.fileName]
+    ['작품 파일', d.fileName],
+    ['개인정보 동의서', d.consentName || '-']
   ];
   var table = '<table style="border-collapse:collapse;font-size:14px">' + rows.map(function (r) {
     return '<tr><th style="text-align:left;padding:6px 12px;background:#eef6ea;border:1px solid #d5e6cd">' + esc_(r[0]) +
@@ -288,7 +310,7 @@ function sendMails_(s, d, edited) {
         subject: '[독후감대회 ' + (edited ? '수정' : '접수') + '] ' + d.receiptNo + ' ' + d.name + ' (' + d.school + ')',
         body: title + '.\n\n' + textRows + '\n파일 링크: ' + d.fileUrl,
         htmlBody: '<div style="font-family:sans-serif;line-height:1.6"><h2 style="color:#3b63f6">' + title + '.</h2>' + table +
-          '<p><a href="' + esc_(d.fileUrl) + '">작품 파일 열기</a></p></div>'
+          '<p><a href="' + esc_(d.fileUrl) + '">작품 파일 열기</a>' + (d.consentUrl ? ' · <a href="' + esc_(d.consentUrl) + '">개인정보 동의서 열기</a>' : '') + '</p></div>'
       });
     } catch (e) { console.error('관리자 메일 실패', e); }
   }
@@ -345,7 +367,8 @@ function lookup_(b) {
         guardian: r[COL.guardian],
         phoneMasked: maskPhone_(r[COL.phone]),
         emailMasked: maskEmail_(r[COL.email]),
-        fileName: r[COL.fileName]
+        fileName: r[COL.fileName],
+        consentName: r[COL.consentName] || ''
       };
     })
   };
@@ -382,6 +405,13 @@ function update_(b) {
     bytes = Utilities.base64Decode(f.data);
     var maxMB = Number(s.maxFileMB) || 10;
     if (bytes.length > maxMB * 1024 * 1024) throw new Error('작품 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
+  }
+  var cf = b.consentFile || null, cbytes = null, cext = '';
+  if (cf && cf.data) {
+    cext = String(cf.name || '').split('.').pop().toLowerCase();
+    if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 동의서는 한글, PDF, 사진(JPG, PNG) 파일로 올려 주세요.');
+    cbytes = Utilities.base64Decode(cf.data);
+    if (cbytes.length > (Number(s.maxFileMB) || 10) * 1024 * 1024) throw new Error('개인정보 동의서는 ' + (Number(s.maxFileMB) || 10) + 'MB 이하로 올려 주세요.');
   }
 
   var lock = LockService.getScriptLock();
@@ -421,6 +451,15 @@ function update_(b) {
     var vals = [d.name, d.grade + '학년', level, d.region, d.school, d.book, d.guardian, phoneFmt, email, fileName, fileUrl].map(noFormula_);
     sh.getRange(rowIdx, COL.name + 1, 1, vals.length).setNumberFormat('@').setValues([vals]);
     sh.getRange(rowIdx, COL.edited + 1).setNumberFormat('@').setValue(stamp);
+
+    var consentName = old[COL.consentName], consentUrl = old[COL.consentUrl];
+    if (cbytes) {
+      var oc = /\/d\/([^/]+)/.exec(consentUrl || '');
+      if (oc) { try { DriveApp.getFileById(oc[1]).setTrashed(true); } catch (e) {} }
+      var nc = DriveApp.getFolderById(s.folderId).createFile(Utilities.newBlob(cbytes, 'application/octet-stream', receiptNo + '_동의서_' + d.name + '.' + cext));
+      consentName = nc.getName(); consentUrl = nc.getUrl();
+      sh.getRange(rowIdx, COL.consentName + 1, 1, 2).setNumberFormat('@').setValues([[consentName, consentUrl].map(noFormula_)]);
+    }
   } finally {
     lock.releaseLock();
   }
@@ -431,6 +470,8 @@ function update_(b) {
   d.email = email;
   d.fileName = fileName.replace(/^R\d+_/, '');
   d.fileUrl = fileUrl;
+  d.consentName = String(consentName || '').replace(/^R\d+_/, '');
+  d.consentUrl = consentUrl;
   sendMails_(s, d, true);
   return { ok: true, receiptNo: receiptNo };
 }
@@ -445,6 +486,11 @@ function entryRows_() {
 function isOpen_(s) {
   var now = new Date(), openAt = parseKst_(s.openAt), deadline = parseKst_(s.deadline);
   return !(openAt && now < openAt) && !(deadline && now > deadline);
+}
+
+function safeUrl_(u) {
+  u = String(u || '').trim();
+  return /^https:\/\/[^\s"'<>]+$/.test(u) ? u : '';
 }
 
 function maskPhone_(p) {

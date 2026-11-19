@@ -366,3 +366,16 @@ footer .icon-btn { width: 32px; height: 32px; font-size: 15px; margin-left: 2px;
 @media (min-width: 900px) and (max-width: 1099px) {
   body.admin .brand > span:last-child { display: none; }
 }
+
+/* ---------- 양식 내려받기 / 접수 준비 ---------- */
+.dl-box { margin-top: 16px; padding: 14px 16px; border-radius: var(--r-md); background: rgba(59, 99, 246, .06); border: 1px dashed rgba(59, 99, 246, .3); }
+.dl-box p { margin: 0 0 10px; font-size: 14.5px; }
+.dl-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.dl-btn.is-pending { opacity: .55; cursor: not-allowed; }
+.dl-btn.is-pending::after { content: ' · 준비 중'; font-weight: 500; }
+.prep { margin: 0 0 24px; }
+.prep-title { font-weight: 800; font-size: 16px !important; margin-bottom: 6px !important; }
+.prep-steps { margin: 0 0 12px; padding-left: 22px; font-size: 14.5px; }
+.prep-steps li + li { margin-top: 4px; }
+.up-label { margin: 0 0 8px; }
+.dl-btn[hidden] { display: none; }

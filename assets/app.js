@@ -581,6 +581,32 @@
     }
   }
 
+  /* ================= 양식 내려받기 버튼 =================
+     주소는 설정 시트의 formUrl / consentUrl에서 옵니다. 비어 있으면 '준비 중'으로 둡니다. */
+  function setDownloads(urls) {
+    $$('[data-dl]').forEach(function (a) {
+      var u = urls[a.getAttribute('data-dl')] || '';
+      var ok = /^https:\/\//.test(u);
+      if (a.hasAttribute('data-optional')) a.hidden = !ok;
+      if (ok) {
+        a.href = u;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.removeAttribute('aria-disabled');
+        a.classList.remove('is-pending');
+      } else {
+        a.removeAttribute('href');
+        a.setAttribute('aria-disabled', 'true');
+        a.classList.add('is-pending');
+      }
+    });
+  }
+  setDownloads({});
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-dl].is-pending');
+    if (a) { e.preventDefault(); toast('info', '양식을 준비하고 있어요', '조금 뒤에 다시 눌러 주세요'); }
+  });
+
   /* ================= 페이지 내용 불러오기 ================= */
   function loadContent() {
     if (!API) return;
@@ -589,6 +615,7 @@
       if (res.openAt) period.openAt = new Date(res.openAt);
       if (res.deadline) period.deadline = new Date(res.deadline);
       if (res.maxFileMB) { MAX_MB = res.maxFileMB; $('#uploadHint').textContent = '한글 문서(HWP, HWPX) · 최대 ' + MAX_MB + 'MB'; }
+      setDownloads({ form: res.formUrl, consent: res.consentUrl });
       var c = res.content || {};
       $$('[data-edit]').forEach(function (el) {
         var key = el.getAttribute('data-edit');
@@ -599,11 +626,12 @@
     }).catch(function () { /* 기본 내용으로 보여 줍니다 */ });
   }
 
-  /* ================= #032 끌어다 놓는 업로드 (실제 파일 읽기 진행률) ================= */
-  var upload = (function () {
-    var root = $('#upload');
+  /* ================= #032 끌어다 놓는 업로드 (실제 파일 읽기 진행률) =================
+     작품 파일과 개인정보 동의서, 두 곳에서 같은 모양으로 씁니다. */
+  function makeUpload(rootSel, allowRe, typeMsg) {
+    var root = $(rootSel);
     var zone = $('.u032-zone', root), pick = $('.u032-file', root), list = $('.u032-list', root);
-    var TYPE = { hwp: '#3b63f6', hwpx: '#2bb39a' };
+    var TYPE = { hwp: '#3b63f6', hwpx: '#2bb39a', pdf: '#e5486b', jpg: '#f59e0b', jpeg: '#f59e0b', png: '#38bdf8' };
     var chosen = null, reader = null;
     function size(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
     function row(name) {
@@ -627,7 +655,7 @@
       if (reader) { reader.abort(); reader = null; }
       chosen = null;
       var li = row(file.name), sm = $('small', li), st = $('.u032-st', li);
-      if (!/\.(hwp|hwpx)$/i.test(file.name)) return fail(li, '한글(HWP, HWPX) 파일만 올릴 수 있어요');
+      if (!allowRe.test(file.name)) return fail(li, typeMsg);
       if (file.size > MAX_MB * 1024 * 1024) return fail(li, size(file.size) + ' · ' + MAX_MB + 'MB보다 커요');
       if (!file.size) return fail(li, '빈 파일이에요');
       st.innerHTML = '<span class="u032-spin" aria-hidden="true"></span>';
@@ -664,9 +692,11 @@
       busy: function () { return !!reader && !chosen && !$('.u032-row.fail', root); },
       add: add,
       reset: function () { if (reader) reader.abort(); reader = null; chosen = null; list.innerHTML = ''; },
-      focus: function () { zone.focus(); shake(zone); }
+      focus: function () { zone.scrollIntoView({ block: 'center' }); zone.focus({ preventScroll: true }); shake(zone); }
     };
-  })();
+  }
+  var upload = makeUpload('#upload', /\.(hwp|hwpx)$/i, '한글(HWP, HWPX) 파일만 올릴 수 있어요');
+  var consentUpload = makeUpload('#consentUpload', /\.(hwp|hwpx|pdf|jpe?g|png)$/i, '한글, PDF, 사진(JPG, PNG) 파일만 올릴 수 있어요');
 
   /* ================= #068 끝까지 읽고 동의하는 약관 ================= */
   var consent = (function () {
@@ -744,6 +774,9 @@
       if (upload.busy()) return fail('작품 파일을 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
       var file = upload.get();
       if (!ed && !file) { upload.focus(); return fail('작품 파일을 올려 주세요.'); }
+      if (consentUpload.busy()) return fail('개인정보 동의서를 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
+      var cfile = consentUpload.get();
+      if (!ed && !cfile) { consentUpload.focus(); return fail('작성한 개인정보 동의서를 첨부해 주세요.'); }
       if (!ed && !consent.ok()) { consent.focus(); return fail('필수 동의 항목 3개에 모두 체크해 주세요.'); }
       if (!API) return fail('접수 서버가 아직 연결되지 않았습니다. 잠시 뒤에 다시 시도해 주세요.');
 
@@ -757,7 +790,8 @@
       var body = {
         name: f.name.value.trim(), grade: f.grade.value, region: f.region.value, school: f.school.value.trim(),
         book: f.book.value, guardian: f.guardian.value.trim(), phone: digits, email: email,
-        file: file ? { name: file.name, data: file.data } : null
+        file: file ? { name: file.name, data: file.data } : null,
+        consentFile: cfile ? { name: cfile.name, data: cfile.data } : null
       };
       if (ed) { body.action = 'update'; body.editToken = ed.token; body.receiptNo = ed.receiptNo; }
       else { body.action = 'apply'; body.agreePrivacy = true; body.agreeRights = true; body.agreeOriginal = true; body.website = f.website.value; }
@@ -782,6 +816,7 @@
     $('#againBtn').addEventListener('click', function () {
       form.reset();
       upload.reset();
+      consentUpload.reset();
       consent.reset();
       form.style.display = '';
       $('#doneBox').classList.remove('show');
@@ -794,6 +829,7 @@
       editing = { token: token, receiptNo: en.receiptNo };
       form.reset();
       upload.reset();
+      consentUpload.reset();
       form.classList.add('editing');
       form.style.display = '';
       $('#doneBox').classList.remove('show');
@@ -811,7 +847,9 @@
       $('#emailHint').textContent = '바꿀 때만 새 주소를 입력하세요. 비워 두면 그대로예요. 수정 확인 메일은 이 주소로 가요.';
       var fc = $('#fileCurrent');
       fc.hidden = false;
-      fc.textContent = '📄 지금 제출된 파일: ' + String(en.fileName || '').replace(/^R\d+_/, '') + ' · 새 파일을 올리면 바뀌고, 올리지 않으면 그대로예요.';
+      fc.textContent = '📄 지금 제출된 작품: ' + String(en.fileName || '').replace(/^R\d+_/, '') +
+        (en.consentName ? ' · 동의서: ' + String(en.consentName).replace(/^R\d+_/, '') : '') +
+        ' · 새 파일을 올리면 바뀌고, 올리지 않으면 그대로예요.';
       $('#editNo').textContent = en.receiptNo;
       $('#editBanner').hidden = false;
       msg.className = 'form-msg';
@@ -824,6 +862,7 @@
       form.classList.remove('editing');
       form.reset();
       upload.reset();
+      consentUpload.reset();
       var f = form.elements;
       f.phone.required = true; f.email.required = true;
       f.phone.placeholder = '010-0000-0000'; f.email.placeholder = 'example@email.com';
@@ -1038,7 +1077,8 @@
     }
     $('#entryBody').innerHTML = rows.map(function (r) {
       var tel = String(r[9]).replace(/\D/g, '');
-      var fileLink = /^https:\/\//.test(r[12]) ? '<a href="' + esc(r[12]) + '" target="_blank" rel="noopener">📄 열기</a>' : esc(r[11]);
+      var fileLink = /^https:\/\//.test(r[12]) ? '<a href="' + esc(r[12]) + '" target="_blank" rel="noopener">📄 작품</a>' : esc(r[11]);
+      if (/^https:\/\//.test(r[19] || '')) fileLink += ' <a href="' + esc(r[19]) + '" target="_blank" rel="noopener">📝 동의서</a>';
       return '<tr>' +
         '<td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + (r[17] ? '<br><small>✏️ 수정 ' + esc(r[17]) + '</small>' : '') + '</td><td><strong>' + esc(r[2]) + '</strong></td>' +
         '<td>' + esc(r[3]) + ' <small>(' + esc(r[4]) + ')</small></td>' +

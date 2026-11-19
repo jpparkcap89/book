@@ -9,8 +9,8 @@
   <meta property="og:description" content="책 속 숲길을 걷고, 나만의 생각을 글로 남겨 보아요! 전국 초등학생 누구나 · 상장 받는 친구 37명">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-  <link rel="stylesheet" href="assets/style.css?v=20261119c">
-  <link rel="stylesheet" href="assets/lucian.css?v=20261119c">
+  <link rel="stylesheet" href="assets/style.css?v=20261119d">
+  <link rel="stylesheet" href="assets/lucian.css?v=20261119d">
 </head>
 <body>
 <div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -109,6 +109,13 @@
               <div class="chips"><span class="chip">바탕체</span><span class="chip">12포인트</span><span class="chip">줄간격 160</span><span class="chip">A4 2매 이내</span></div>
               <p class="muted">파일 제목: <strong>지역_학교명_학생명_도서명</strong> · 접수하면 이 형식으로 자동 저장됩니다.</p>
             </div>
+            <div class="dl-box">
+              <p><strong>신청서·개인정보 동의서</strong>를 내려받아 작성(보호자 서명)한 뒤, 접수할 때 독후감과 함께 첨부해 주세요.</p>
+              <div class="dl-row">
+                <a class="btn primary small dl-btn" data-dl="consent">📝 신청서·개인정보 동의서 양식 내려받기 (한글)</a>
+                <a class="btn ghost small dl-btn" data-dl="form" data-optional hidden>📄 독후감 출품 양식 내려받기 (한글)</a>
+              </div>
+            </div>
           </div>
           <div class="glass u251-cd" data-rv style="--d:0s">
             <div class="u251-ic" style="--c:rgba(59,99,246,.14)" aria-hidden="true">📮</div>
@@ -201,6 +208,18 @@
           <span>✏️ <strong id="editNo"></strong> 접수를 수정하고 있어요</span>
           <button type="button" class="btn ghost small" id="editCancel">수정 취소</button>
         </div>
+        <div class="dl-box prep">
+          <p class="prep-title">📥 접수 전에 준비해 주세요</p>
+          <ol class="prep-steps">
+            <li><strong>신청서·개인정보 동의서 양식</strong>을 내려받습니다.</li>
+            <li>양식을 작성하고 <strong>보호자 서명</strong>을 받습니다. (한글 파일로 저장하거나, 인쇄해 서명한 뒤 사진으로 찍어도 돼요)</li>
+            <li>아래에서 정보를 입력하고 <strong>독후감 파일</strong>과 <strong>작성한 동의서</strong>를 함께 첨부합니다.</li>
+          </ol>
+          <div class="dl-row">
+            <a class="btn primary small dl-btn" data-dl="consent">📝 신청서·개인정보 동의서 양식 내려받기 (한글)</a>
+                <a class="btn ghost small dl-btn" data-dl="form" data-optional hidden>📄 독후감 출품 양식 내려받기 (한글)</a>
+          </div>
+        </div>
         <form id="applyForm" novalidate>
           <fieldset>
             <legend>👧 참가 학생</legend>
@@ -253,7 +272,8 @@
           </fieldset>
 
           <fieldset>
-            <legend>📎 작품 제출 <span class="req" style="color:var(--ux-danger)">*</span></legend>
+            <legend>📎 파일 첨부 <span class="req" style="color:var(--ux-danger)">*</span></legend>
+            <p class="f up-label">① 독후감 파일</p>
             <!-- Lucian UX/UI Prompt #032 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#032 -->
             <div class="ux u032" id="upload">
               <button class="u032-zone" type="button" aria-describedby="uploadHint">
@@ -263,6 +283,18 @@
                 <small id="uploadHint">한글 문서(HWP, HWPX) · 최대 10MB</small>
               </button>
               <input class="u032-file" type="file" id="file" name="file" accept=".hwp,.hwpx" tabindex="-1" aria-hidden="true">
+              <ul class="u032-list" aria-live="polite"></ul>
+            </div>
+            <p class="f up-label" style="margin-top:18px">② 작성한 신청서·개인정보 동의서 <span class="muted" style="font-weight:500">(보호자 서명 포함)</span></p>
+            <!-- Lucian UX/UI Prompt #032 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#032 -->
+            <div class="ux u032" id="consentUpload">
+              <button class="u032-zone" type="button" aria-describedby="consentHint">
+                <svg class="u032-dash" aria-hidden="true"><rect width="100%" height="100%" rx="25"/></svg>
+                <span class="u032-orb" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M8.5 20.5H7a5 5 0 0 1-.6-10 7 7 0 0 1 13.4-1.6A5.5 5.5 0 0 1 21 20.5h-1.5M14 13v10M10.5 16.5L14 13l3.5 3.5"/></svg></span>
+                <b>작성한 동의서를 끌어다 놓거나 <em>골라 주세요</em></b>
+                <small id="consentHint">한글, PDF, 사진(JPG, PNG) · 최대 10MB</small>
+              </button>
+              <input class="u032-file" type="file" id="consentFile" name="consentFile" accept=".hwp,.hwpx,.pdf,.jpg,.jpeg,.png" tabindex="-1" aria-hidden="true">
               <ul class="u032-list" aria-live="polite"></ul>
             </div>
             <p class="hint" id="fileCurrent" hidden></p>
@@ -276,14 +308,15 @@
               <div class="u068-doc"><div class="u068-txt" tabindex="0" role="document" aria-label="개인정보 수집·이용 동의, 사용권 귀속 동의, 창작 서약 본문">
                 <b class="h">1. 개인정보 수집·이용 동의 (법정대리인) [필수]</b>
                 <div data-edit="consent.privacy">
-                  <p>숲속동화문학회는 「개인정보 보호법」 제15조 및 제22조의2에 따라 아래와 같이 개인정보를 수집·이용합니다. 만 14세 미만 아동의 개인정보이므로 법정대리인(보호자)의 동의를 받습니다.</p>
+                  <p>숲속동화문학회는 「개인정보 보호법」 등 관련 법규에 따라 아래와 같이 개인정보를 수집·이용하고 제3자에게 제공합니다. 만 14세 미만 아동의 개인정보이므로 법정대리인(보호자)의 동의를 받습니다.</p>
                   <table>
-                    <tr><th>수집·이용 목적</th><td>독후감대회 참가 접수 및 본인 확인, 작품 심사, 수상자 발표 및 연락, 시상</td></tr>
-                    <tr><th>수집 항목</th><td>(학생) 이름, 학년, 지역, 학교명, 제출 작품<br>(보호자) 성명, 휴대전화 번호, 이메일 주소</td></tr>
-                    <tr><th>보유·이용 기간</th><td><strong>시상식 종료 후 6개월(2027. 8. 31.)까지</strong> 보관한 뒤 지체 없이 파기합니다. 단, 수상자의 이름·학교·학년·수상 내역은 대회 기록으로 보존합니다.</td></tr>
+                    <tr><th>수집·이용 목적</th><td>숲속동화문학회 전국어린이 독후감쓰기 대회 관련 업무(본인 확인), 수상자의 상금 및 상품 업무 처리</td></tr>
+                    <tr><th>수집 항목</th><td>(학생) 지역, 학교, 학년, 반, 성명, 개인 연락처, 작품<br>(지도교사) 성명, 연락처 ※ 단체 응모일 때<br>(보호자) 성명, 연락처, 이메일 주소</td></tr>
+                    <tr><th>보유·이용 기간</th><td>제15회 대회 <strong>시상식 후 바로 파기</strong>합니다. 단, 수상자 명단은 영구 보존합니다.</td></tr>
+                    <tr><th>제3자 제공</th><td>· 수상자의 상장 인쇄 및 우수작품 연간집 수록: 수상자의 학교, 학년, 반, 성명, 수상작<br>· 방송 및 언론사: 사진, 학교, 학년, 성명, 수상작</td></tr>
                     <tr><th>동의 거부 권리</th><td>동의를 거부할 권리가 있습니다. 다만 동의하지 않으면 대회에 접수할 수 없습니다.</td></tr>
                   </table>
-                  <p>상금 지급에 필요한 정보는 수상자에게만 따로 받습니다.</p>
+                  <p>보호자 서명이 들어간 동의서(내려받은 양식)도 함께 첨부해 주세요.</p>
                 </div>
                 <b class="h">2. 수상작 사용권 귀속 동의 [필수]</b>
                 <div data-edit="consent.rights">
@@ -406,7 +439,7 @@
   </div>
 </div>
 
-<script src="config.js?v=20261119c"></script>
-<script src="assets/app.js?v=20261119c"></script>
+<script src="config.js?v=20261119d"></script>
+<script src="assets/app.js?v=20261119d"></script>
 </body>
 </html>
