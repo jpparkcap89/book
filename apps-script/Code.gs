@@ -28,7 +28,8 @@ var DEFAULT_SETTINGS = [
   ['deadline', '2027-01-20 16:00', '접수 마감 (한국 시간, YYYY-MM-DD HH:mm)'],
   ['folderId', '', '작품 파일이 저장될 구글 드라이브 폴더 ID (setup()이 자동으로 채움)'],
   ['senderName', '숲속동화문학회', '메일 보낸 사람 이름'],
-  ['maxFileMB', '10', '작품 파일 최대 용량(MB)']
+  ['maxFileMB', '10', '작품 파일 최대 용량(MB)'],
+  ['adminPhone', '010-5371-4818', '확인 메일에 적는 문자 문의 번호']
 ];
 
 var ALLOWED_EXT = ['hwp', 'hwpx'];
@@ -232,6 +233,7 @@ function apply_(b) {
 
 function sendMails_(s, d) {
   var sender = s.senderName || '숲속동화문학회';
+  var phone = s.adminPhone || '010-5371-4818';
   var rows = [
     ['접수번호', d.receiptNo],
     ['학생 이름', d.name],
@@ -256,11 +258,11 @@ function sendMails_(s, d) {
       name: sender,
       subject: '[제15회 전국어린이독후감쓰기 대회] 접수가 완료되었습니다',
       body: '접수가 완료되었습니다.\n\n' + textRows +
-        '\n\n수상자 발표: 2027년 2월 4일(목) 16:00\n문의: 010-5371-4818 (문자)\n\n' + sender,
+        '\n\n수상자 발표: 2027년 2월 4일(목) 16:00\n문의: ' + phone + ' (문자)\n\n' + sender,
       htmlBody: '<div style="font-family:sans-serif;line-height:1.6">' +
         '<h2 style="color:#2f6b3a">접수가 완료되었습니다.</h2>' +
         '<p>' + esc_(d.guardian) + ' 님, ' + esc_(d.name) + ' 학생의 독후감이 잘 접수되었습니다.</p>' + table +
-        '<p style="margin-top:16px">수상자 발표: <b>2027년 2월 4일(목) 16:00</b><br>문의: 010-5371-4818 (문자)</p>' +
+        '<p style="margin-top:16px">수상자 발표: <b>2027년 2월 4일(목) 16:00</b><br>문의: ' + esc_(phone) + ' (문자)</p>' +
         '<p style="color:#888;font-size:12px">이 메일은 발신 전용입니다. ' + esc_(sender) + '</p></div>'
     });
   } catch (e) { console.error('접수자 메일 실패', e); }
