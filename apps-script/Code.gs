@@ -574,7 +574,7 @@ function hash_(pw) {
 
 /** 'YYYY-MM-DD HH:mm' (한국 시간) → Date */
 function parseKst_(s) {
-  var m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(String(s || '').trim());
+  var m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/.exec(String(s || '').trim());
   if (!m) return null;
   return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], (+m[4] || 0) - 9, +m[5] || 0));
 }
