@@ -9,8 +9,8 @@
   <meta property="og:description" content="책 속 숲길을 걷고, 나만의 생각을 글로 남겨 보아요! 전국 초등학생 누구나 · 상장 받는 친구 37명">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-  <link rel="stylesheet" href="assets/style.css?v=20261119b">
-  <link rel="stylesheet" href="assets/lucian.css?v=20261119b">
+  <link rel="stylesheet" href="assets/style.css?v=20261119c">
+  <link rel="stylesheet" href="assets/lucian.css?v=20261119c">
 </head>
 <body>
 <div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -224,8 +224,19 @@
                 </select>
               </div>
               <div><label class="f" for="school">학교(소속) <span class="req">*</span></label><input class="field" type="text" id="school" name="school" maxlength="50" placeholder="예: 숲속초등학교" required></div>
-              <div class="full"><label class="f" for="book">읽은 책 <span class="req">*</span></label>
-                <select class="field" id="book" name="book" required><option value="">대상 도서 25권 중에서 고르세요</option></select>
+              <div class="full"><span class="f" id="bookLabel">읽은 책 <span class="req">*</span></span>
+                <select class="sr-only" id="book" name="book" required tabindex="-1" aria-hidden="true"><option value="">대상 도서 25권 중에서 고르세요</option></select>
+                <!-- Lucian UX/UI Prompt #031 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#031 -->
+                <div class="ux u031" id="bookPicker">
+                  <div class="u031-f">
+                    <button class="u031-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="bookLabel bookPickerValue">
+                      <span class="u031-flag" aria-hidden="true">📖</span>
+                      <span class="u031-v" id="bookPickerValue"><b>대상 도서 25권 중에서 고르세요</b><small>누르면 목록이 열려요</small></span>
+                      <svg class="u031-car" viewBox="0 0 18 18" aria-hidden="true"><path d="M4.5 7l4.5 4.5L13.5 7"/></svg>
+                    </button>
+                    <ul class="u031-list" role="listbox" tabindex="-1" aria-label="대상 도서"><li class="u031-hl" role="presentation" aria-hidden="true"></li></ul>
+                  </div>
+                </div>
               </div>
             </div>
           </fieldset>
@@ -395,7 +406,7 @@
   </div>
 </div>
 
-<script src="config.js?v=20261119b"></script>
-<script src="assets/app.js?v=20261119b"></script>
+<script src="config.js?v=20261119c"></script>
+<script src="assets/app.js?v=20261119c"></script>
 </body>
 </html>

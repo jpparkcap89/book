@@ -411,6 +411,103 @@
     });
   })();
 
+  /* ================= #031 맞춤 선택 목록: 읽은 책 고르기 =================
+     실제 값은 숨긴 <select id="book">에 그대로 두고, 화면에는 책 이름과 작은 글씨 지은이를 보여 줍니다. */
+  var bookPicker = (function () {
+    var root = $('#bookPicker'), sel = $('#book');
+    var btn = $('.u031-btn', root), list = $('.u031-list', root), hl = $('.u031-hl', root);
+    var vb = $('.u031-v b', btn), vs = $('.u031-v small', btn), flag = $('.u031-flag', btn);
+    var PH = [vb.textContent, vs.textContent];
+    var ROW = 52, uid = 'u031-book';
+    var cur = -1, act = 0, typed = '', tt = 0;
+    list.id = uid;
+    btn.setAttribute('aria-controls', uid);
+    var items = BOOKS.map(function (b, i) {
+      var li = document.createElement('li');
+      li.className = 'u031-o';
+      li.id = uid + '-' + i;
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', 'false');
+      li.innerHTML = '<span class="u031-flag" aria-hidden="true">' + (i + 1) + '</span><span class="t"><b></b><small></small></span><svg class="u031-ck" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9.5l3.5 3.5L14 6"/></svg>';
+      $('b', li).textContent = b[0];
+      $('small', li).textContent = b[1].split(' 글')[0] + ' 저 · ' + b[2];
+      li.addEventListener('pointermove', function () { if (act !== i) { act = i; mark(false); } });
+      li.addEventListener('click', function () { choose(i, true); });
+      list.appendChild(li);
+      return li;
+    });
+    function mark(scroll) {
+      hl.style.setProperty('--i', act);
+      list.setAttribute('aria-activedescendant', items[act].id);
+      if (scroll) {
+        var top = 6 + act * ROW, bottom = top + ROW;
+        if (top < list.scrollTop) list.scrollTop = top - 6;
+        else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight + 6;
+      }
+    }
+    function show(i) {
+      cur = i;
+      items.forEach(function (li, k) { li.setAttribute('aria-selected', String(k === i)); });
+      if (i < 0) { vb.textContent = PH[0]; vs.textContent = PH[1]; flag.textContent = '📖'; return; }
+      var b = BOOKS[i];
+      vb.textContent = b[0];
+      vs.textContent = b[1].split(' 글')[0] + ' 저 · ' + b[2];
+      flag.textContent = String(i + 1);
+    }
+    function open() {
+      root.classList.add('is-open');
+      btn.setAttribute('aria-expanded', 'true');
+      list.classList.add('is-open');
+      act = cur >= 0 ? cur : 0;
+      list.scrollTop = Math.max(0, act * ROW - 120);
+      mark(true);
+      list.focus({ preventScroll: true });
+    }
+    function close(refocus) {
+      root.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+      list.classList.remove('is-open');
+      if (refocus) btn.focus({ preventScroll: true });
+    }
+    function choose(i, animate) {
+      sel.value = BOOKS[i][0];
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      root.classList.remove('bad');
+      show(i);
+      // 바뀐 값이 살짝 튀어 오르며 들어옵니다
+      var v = $('.u031-v', btn);
+      if (animate && v.animate && !RM) v.animate([{ transform: 'translateY(8px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 380, easing: 'cubic-bezier(.34,1.45,.64,1)' });
+      close(true);
+    }
+    btn.addEventListener('click', function () { list.classList.contains('is-open') ? close(true) : open(); });
+    btn.addEventListener('keydown', function (e) { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); } });
+    list.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); act = Math.min(items.length - 1, act + 1); mark(true); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); act = Math.max(0, act - 1); mark(true); }
+      else if (e.key === 'Home') { e.preventDefault(); act = 0; mark(true); }
+      else if (e.key === 'End') { e.preventDefault(); act = items.length - 1; mark(true); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(act, true); }
+      else if (e.key === 'Escape') { e.preventDefault(); close(true); }
+      else if (e.key === 'Tab') close(false);
+      else if (e.key.length === 1) {
+        // 글자(숫자)를 치면 그 글자로 시작하는 책으로 갑니다
+        typed += e.key.toLowerCase();
+        clearTimeout(tt); tt = setTimeout(function () { typed = ''; }, 600);
+        var hit = BOOKS.findIndex(function (b) { return b[0].toLowerCase().indexOf(typed) === 0; });
+        if (hit >= 0) { act = hit; mark(true); }
+      }
+    });
+    list.addEventListener('blur', function () { setTimeout(function () { if (!root.contains(document.activeElement)) close(false); }, 0); });
+    document.addEventListener('pointerdown', function (e) { if (list.classList.contains('is-open') && !root.contains(e.target)) close(false); });
+    // 폼을 비우거나(초기화) 수정 모드에서 값을 넣으면 화면도 맞춥니다
+    function sync() { show(BOOKS.findIndex(function (b) { return b[0] === sel.value; })); }
+    if (sel.form) sel.form.addEventListener('reset', function () { setTimeout(sync, 0); });
+    return {
+      sync: sync,
+      bad: function () { root.classList.add('bad'); btn.focus(); shake(btn); }
+    };
+  })();
+
   /* ================= 접수 기간 ================= */
   var period = { openAt: new Date(DEFAULT_OPEN), deadline: new Date(DEFAULT_DEADLINE) };
   function dday(target) {
@@ -626,7 +723,7 @@
     function fail(text, el) {
       msg.className = 'form-msg err';
       msg.textContent = text;
-      if (el && el.classList) { el.classList.add('bad'); el.focus(); }
+      if (el === form.elements.book) bookPicker.bad(); else if (el && el.classList) { el.classList.add('bad'); el.focus(); }
       return false;
     }
 
@@ -707,6 +804,7 @@
         var o = document.createElement('option'); o.value = en.book; o.textContent = en.book; $('#book').appendChild(o);
       }
       f.book.value = en.book;
+      bookPicker.sync();
       f.phone.required = false; f.email.required = false;
       f.phone.placeholder = en.phoneMasked; f.email.placeholder = en.emailMasked;
       $('#phoneHint').textContent = '바꿀 때만 새 번호를 입력하세요. 비워 두면 그대로예요.';

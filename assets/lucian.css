@@ -264,3 +264,34 @@ body.admin .u068-txt [data-edit] .edit-pen{top:2px;right:2px}
 .u070-bar{position:absolute;left:16px;right:16px;bottom:0;height:2px;border-radius:2px;background:var(--c);opacity:.5;transform-origin:0 50%;transform:scaleX(var(--left,1))}
 .u070-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (max-width:520px){.u070{right:16px;bottom:16px}}
+
+/* ---------------------------------------------------------
+   Lucian UX/UI Prompt #031 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#031
+   맞춤 선택 목록 → 읽은 책 고르기 (책 이름 + 작은 글씨 지은이, 25권이라 목록은 스크롤)
+   --------------------------------------------------------- */
+.u031{position:relative;width:100%}
+.u031-f{position:relative}
+.u031-btn{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:6px 14px;border:0;border-radius:16px;background:var(--ux-surface-2);color:var(--ux-ink);text-align:left;
+  box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .25s var(--ux-ease),background-color .25s}
+.u031-btn:hover{box-shadow:inset 0 0 0 1.5px var(--ux-line-2)}
+.u031-btn:focus-visible,.u031.is-open .u031-btn[aria-expanded="true"]{outline:0;background:var(--ux-surface);box-shadow:inset 0 0 0 2px var(--ux-accent),0 0 0 5px var(--ux-accent-soft)}
+.u031.bad .u031-btn{box-shadow:inset 0 0 0 1.5px var(--ux-danger);background:color-mix(in srgb,var(--ux-danger) 6%,#fff)}
+.u031-flag{width:30px;height:30px;flex:none;border-radius:9px;display:grid;place-items:center;font-size:12px;font-weight:800;letter-spacing:.02em;color:#fff;background:var(--c,linear-gradient(140deg,#3b63f6,#8e9cff))}
+.u031-v{flex:1;min-width:0}
+.u031-v b{display:block;font-size:15.5px;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u031-v small{display:block;font-size:12px;color:var(--ux-ink-3)}
+.u031-car{width:18px;height:18px;flex:none;fill:none;stroke:var(--ux-ink-3);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .45s var(--ux-spring)}
+.u031-btn[aria-expanded="true"] .u031-car{transform:rotate(180deg)}
+.u031-list{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 8px);margin:0;padding:6px;list-style:none;border-radius:18px;background:var(--ux-surface);
+  max-height:330px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--ux-line-2) transparent;
+  box-shadow:0 0 0 1px var(--ux-line-2),0 28px 56px -24px var(--ux-shadow-strong);transform-origin:50% 0;outline:none;
+  opacity:0;transform:translateY(-6px) scaleY(.92);visibility:hidden;transition:opacity .2s var(--ux-ease),transform .4s var(--ux-spring),visibility 0s .4s}
+.u031-list.is-open{opacity:1;transform:none;visibility:visible;transition:opacity .2s var(--ux-ease),transform .45s var(--ux-spring)}
+.u031-hl{position:absolute;left:6px;right:6px;top:6px;height:52px;border-radius:12px;background:var(--ux-surface-2);transform:translateY(calc(var(--i,0) * 52px));transition:transform .35s var(--ux-spring);pointer-events:none}
+.u031-o{position:relative;display:flex;align-items:center;gap:12px;height:52px;padding:0 10px;border-radius:12px;cursor:pointer}
+.u031-o .u031-flag{width:26px;height:26px;border-radius:8px;font-size:11px}
+.u031-o .t{flex:1;min-width:0;line-height:1.25}
+.u031-o .t b{display:block;font-size:14.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u031-o .t small{display:block;font-size:12px;font-weight:500;color:var(--ux-ink-3)}
+.u031-ck{margin-left:auto;width:18px;height:18px;flex:none;fill:none;stroke:var(--ux-accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.4);transition:opacity .2s,transform .4s var(--ux-spring)}
+.u031-o[aria-selected="true"] .u031-ck{opacity:1;transform:none}
