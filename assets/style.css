@@ -353,3 +353,6 @@ dialog.lightbox img { width: 100%; height: auto; border-radius: 14px; margin-top
 .poster-page .poster-thumb { width: min(480px, 100%); margin: 0 auto 22px; }
 .poster-page .poster-thumb:hover { transform: translateY(-4px); }
 .poster-page .poster-thumb .zoom { width: 44px; height: 44px; font-size: 19px; right: 12px; bottom: 12px; }
+
+/* 하단 문자 보내기 아이콘 */
+footer .icon-btn { width: 32px; height: 32px; font-size: 15px; margin-left: 2px; vertical-align: middle; }
