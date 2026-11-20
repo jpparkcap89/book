@@ -451,7 +451,7 @@ function update_(b) {
       fileName = file.getName();
       fileUrl = file.getUrl();
     } else if (oldFile) {
-      // 지역·학년·이름이 바뀌면 파일 제목도 맞춰 바꿉니다
+      // 지역·학년·이름·도서가 바뀌면 파일 제목도 맞춰 바꿉니다
       var oldExt = String(fileName).split('.').pop();
       oldFile.setName(baseName + '.' + oldExt);
       fileName = oldFile.getName();
@@ -704,8 +704,11 @@ function deleteEntries_(b) {
   return { ok: true, deleted: deleted, trashed: trashed };
 }
 
+// 개인정보제공동의서_지역_학년_학생이름 / 독후감_지역_학년_학생이름_도서명
 function fileBase_(kind, d) {
-  return [kind, d.region, d.grade + '학년', d.name].join('_').replace(/[\\/:*?"<>|]/g, '');
+  var parts = [kind, d.region, d.grade + '학년', d.name];
+  if (kind === '독후감') parts.push(d.book);
+  return parts.join('_').replace(/[\\/:*?"<>|]/g, '').trim();
 }
 
 function nextReceiptNo_(sh) {
