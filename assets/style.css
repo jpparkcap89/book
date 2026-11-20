@@ -412,3 +412,9 @@ table.entries input[type=checkbox] { width: 18px; height: 18px; accent-color: va
 .row-del { border: 0; background: none; cursor: pointer; font-size: 17px; padding: 4px 8px; border-radius: 8px; }
 .row-del:hover { background: color-mix(in srgb, var(--ux-danger) 14%, transparent); }
 table.entries tr.is-checked td { background: rgba(59, 99, 246, .06); }
+
+/* 제목: 윗줄 단체명(18pt·진한 회색), 아랫줄 대회명(그라데이션) */
+.hero-title .org-line { font-size: 24px; font-weight: 700; color: #4b5563; letter-spacing: -.01em; line-height: 1.4; margin-bottom: 6px; }
+.hero-title .grad { font-size: clamp(26px, 5.2vw, 50px); line-height: 1.2; }
+@media (max-width: 520px) { .hero-title .org-line { font-size: 20px; } }
+.hero-title .grad { text-wrap: balance; }
