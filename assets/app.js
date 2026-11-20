@@ -515,6 +515,14 @@
     return kst(target) - kst(new Date());
   }
   function fmtDate(d) { var k = new Date(d.getTime() + 9 * 3600000); return (k.getUTCMonth() + 1) + '월 ' + k.getUTCDate() + '일'; }
+  var WD = ['일', '월', '화', '수', '목', '금', '토'];
+  function kst(d) { return new Date(d.getTime() + 9 * 3600000); }
+  function wday(d) { return WD[kst(d).getUTCDay()]; }
+  // 12.10.(목)
+  function fmtMDw(d) { var k = kst(d); return (k.getUTCMonth() + 1) + '.' + k.getUTCDate() + '.(' + wday(d) + ')'; }
+  // 2026. 12. 10.(목)
+  function fmtYMDw(d) { var k = kst(d); return k.getUTCFullYear() + '. ' + (k.getUTCMonth() + 1) + '. ' + k.getUTCDate() + '.(' + wday(d) + ')'; }
+  function fmtHM(d) { var k = kst(d), p = function (x) { return ('0' + x).slice(-2); }; return p(k.getUTCHours()) + ':' + p(k.getUTCMinutes()); }
   function phase() {
     // 관리자가 '지금 열기/닫기'를 고르면 기간보다 그것을 따릅니다
     if (period.mode === 'open') return 'open';
@@ -530,13 +538,20 @@
   var notice = (function () {
     var root = $('#notice');
     var pl = $('.u252-pl', root), rs = $('.u252-rs', root), pn = $('.u252-pn', root), tag = $('#noticeTag');
-    var LOG = [['12.10', '접수 시작', '2027. 1. 20.(수) 16시까지 온라인 접수'], ['2.4', '수상자 발표', '카페 공지 · 수상자 개별 문자'], ['2.27', '시상식', '시간과 장소는 추후 안내']];
-    var H = 20, NEWS = [], k = 0, open = false, vis = true, t = 0;
-    LOG.forEach(function (l, i) {
-      var d = document.createElement('div'); d.className = 'u252-it'; d.style.transitionDelay = (0.08 + i * 0.07) + 's';
-      d.innerHTML = '<time>' + l[0] + '</time><div><b>' + l[1] + '</b><span>' + l[2] + '</span></div>';
-      pn.appendChild(d);
-    });
+    var H = 20, NEWS = [], k = 0, open = false, vis = true, t = 0, logSig = '';
+    // 주요 일정 (접수 기간은 관리 페이지의 기간을 따릅니다)
+    function setLog(LOG) {
+      var s = JSON.stringify(LOG);
+      if (s === logSig) return;
+      logSig = s;
+      $$('.u252-it', pn).forEach(function (x) { x.remove(); });
+      LOG.forEach(function (l, i) {
+        var d = document.createElement('div'); d.className = 'u252-it'; d.style.transitionDelay = (0.08 + i * 0.07) + 's';
+        d.innerHTML = '<time></time><div><b></b><span></span></div>';
+        $('time', d).textContent = l[0]; $('b', d).textContent = l[1]; $('span', d).textContent = l[2];
+        pn.appendChild(d);
+      });
+    }
     function label() { pl.setAttribute('aria-label', (NEWS[k % NEWS.length] || '') + ' · 주요 일정 펼치기'); }
     var sig = '';
     function set(tagText, news) {
@@ -562,14 +577,19 @@
     document.addEventListener('click', function (e) { if (open && !root.contains(e.target)) { open = false; root.classList.remove('is-open'); pl.setAttribute('aria-expanded', 'false'); } });
     if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; }).observe(root);
     t = setTimeout(tick, 1600);
-    return { set: set };
+    return { set: set, setLog: setLog };
   })();
 
   function renderStatus() {
     var p = phase(), btn = $('#submitBtn'), msg = $('#formMsg');
+    notice.setLog([
+      [fmtMDw(period.openAt), '접수 시작', fmtYMDw(period.openAt) + ' ~ ' + fmtYMDw(period.deadline) + ' ' + fmtHM(period.deadline)],
+      ['2. 4.(목)', '수상작 발표', '대회 홈페이지 및 카페(숲속동화문학회), 수상자 개별 문자 안내'],
+      ['2.27.(토)', '당선작 시상식', '시간과 장소는 추후 안내']
+    ]);
     if (p === 'soon') {
       var d = dday(period.openAt);
-      notice.set(d > 0 ? 'D-' + d : '접수 예정', [fmtDate(period.openAt) + '부터 접수를 시작해요', '상장 받는 친구 37명!', '추천 도서 25권 중 1권 골라 읽기']);
+      notice.set(d > 0 ? 'D-' + d : '접수 예정', [fmtDate(period.openAt) + ' ' + wday(period.openAt) + '요일부터 접수를 시작해요', '상장 받는 친구 37명!', '추천 도서 25권 중 1권 골라 읽기']);
     } else if (p === 'open') {
       var d2 = dday(period.deadline);
       notice.set('접수 중', [(d2 > 0 ? '마감까지 D-' + d2 + ' · 지금 접수하세요' : '오늘 16시에 마감해요!'), '상장 받는 친구 37명!', '추천 도서 25권 중 1권 골라 읽기']);
@@ -627,7 +647,11 @@
       if (res.openAt) period.openAt = new Date(res.openAt);
       if (res.deadline) period.deadline = new Date(res.deadline);
       period.mode = res.acceptMode || 'auto';
-      if (res.maxFileMB) { MAX_MB = res.maxFileMB; $('#uploadHint').textContent = '한글 문서(HWP, HWPX) · 최대 ' + MAX_MB + 'MB'; }
+      if (res.maxFileMB) {
+        MAX_MB = res.maxFileMB;
+        $('#uploadHint').textContent = '한글(HWP, HWPX), PDF, 워드(DOC, DOCX) · 최대 ' + MAX_MB + 'MB';
+        $('#consentHint').textContent = 'PDF, 그림(PNG, JPG) · 최대 ' + MAX_MB + 'MB';
+      }
       setDownloads({ form: res.formUrl, consent: res.consentUrl });
       var c = res.content || {};
       $$('[data-edit]').forEach(function (el) {
@@ -644,7 +668,7 @@
   function makeUpload(rootSel, allowRe, typeMsg) {
     var root = $(rootSel);
     var zone = $('.u032-zone', root), pick = $('.u032-file', root), list = $('.u032-list', root);
-    var TYPE = { hwp: '#3b63f6', hwpx: '#2bb39a', pdf: '#e5486b', jpg: '#f59e0b', jpeg: '#f59e0b', png: '#38bdf8' };
+    var TYPE = { hwp: '#3b63f6', hwpx: '#2bb39a', pdf: '#e5486b', doc: '#2b579a', docx: '#2b579a', jpg: '#f59e0b', jpeg: '#f59e0b', png: '#38bdf8' };
     var chosen = null, reader = null;
     function size(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
     function row(name) {
@@ -708,9 +732,9 @@
       focus: function () { zone.scrollIntoView({ block: 'center' }); zone.focus({ preventScroll: true }); shake(zone); }
     };
   }
-  var upload = makeUpload('#upload', /\.(hwp|hwpx)$/i, '한글(HWP, HWPX) 파일만 올릴 수 있어요');
-  // 신청서·동의서·독후감이 한 파일(출품 양식)이라 따로 받는 동의서 칸은 없습니다
-  var consentUpload = { get: function () { return null; }, busy: function () { return false; }, reset: function () {}, focus: function () {} };
+  // 독후감은 문서 파일만, 개인정보 제공 동의서는 PDF·그림 파일만 받습니다
+  var upload = makeUpload('#upload', /\.(hwp|hwpx|pdf|docx?)$/i, '한글(HWP, HWPX), PDF, 워드(DOC, DOCX) 문서만 올릴 수 있어요');
+  var consentUpload = makeUpload('#consentUpload', /\.(pdf|png|jpe?g)$/i, 'PDF나 그림(PNG, JPG) 파일만 올릴 수 있어요');
 
   /* ================= #068 끝까지 읽고 동의하는 약관 ================= */
   var consent = (function () {
@@ -785,10 +809,11 @@
       // 수정할 때는 전화번호·이메일을 비워 두면 그대로 둡니다
       if ((!ed || digits) && !/^01[016789]\d{7,8}$/.test(digits)) return fail('보호자 휴대전화 번호를 확인해 주세요.', f.phone);
       if ((!ed || email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('보호자 이메일 주소를 확인해 주세요.', f.email);
-      if (upload.busy()) return fail('작품 파일을 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
-      var file = upload.get();
-      if (!ed && !file) { upload.focus(); return fail('작성한 출품 양식 파일을 올려 주세요.'); }
+      if (consentUpload.busy() || upload.busy()) return fail('파일을 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
       var cfile = consentUpload.get();
+      if (!ed && !cfile) { consentUpload.focus(); return fail('보호자가 서명한 개인정보 제공 동의서(PDF·그림 파일)를 올려 주세요.'); }
+      var file = upload.get();
+      if (!ed && !file) { upload.focus(); return fail('독후감 파일을 올려 주세요.'); }
       if (!ed && !consent.ok()) { consent.focus(); return fail('필수 동의 항목 3개에 모두 체크해 주세요.'); }
       if (!API) return fail('접수 서버가 아직 연결되지 않았습니다. 잠시 뒤에 다시 시도해 주세요.');
 
@@ -859,7 +884,7 @@
       $('#emailHint').textContent = '바꿀 때만 새 주소를 입력하세요. 비워 두면 그대로예요. 수정 확인 메일은 이 주소로 가요.';
       var fc = $('#fileCurrent');
       fc.hidden = false;
-      fc.textContent = '📄 지금 제출된 작품: ' + String(en.fileName || '').replace(/^R\d+_/, '') +
+      fc.textContent = '📄 지금 제출된 독후감: ' + String(en.fileName || '').replace(/^R\d+_/, '') +
         (en.consentName ? ' · 동의서: ' + String(en.consentName).replace(/^R\d+_/, '') : '') +
         ' · 새 파일을 올리면 바뀌고, 올리지 않으면 그대로예요.';
       $('#editNo').textContent = en.receiptNo;
@@ -1168,7 +1193,7 @@
     }
     $('#entryBody').innerHTML = rows.map(function (r) {
       var tel = String(r[9]).replace(/\D/g, '');
-      var fileLink = /^https:\/\//.test(r[12]) ? '<a href="' + esc(r[12]) + '" target="_blank" rel="noopener">📄 작품</a>' : esc(r[11]);
+      var fileLink = /^https:\/\//.test(r[12]) ? '<a href="' + esc(r[12]) + '" target="_blank" rel="noopener">📄 독후감</a>' : esc(r[11]);
       if (/^https:\/\//.test(r[19] || '')) fileLink += ' <a href="' + esc(r[19]) + '" target="_blank" rel="noopener">📝 동의서</a>';
       var on = !!picked[r[0]];
       return '<tr' + (on ? ' class="is-checked"' : '') + '>' +

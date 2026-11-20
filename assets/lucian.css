@@ -60,7 +60,7 @@
    반짝 지나가며 펼쳐지는 공지 알약 → 히어로 위 접수 상태 알약
    (글자 크기를 읽기 좋게 조금 키웠습니다)
    --------------------------------------------------------- */
-.u252{position:relative;display:inline-block;width:min(360px,100%);z-index:6;color:var(--ux-ink);text-align:left}
+.u252{position:relative;display:inline-block;width:min(420px,100%);z-index:6;color:var(--ux-ink);text-align:left}
 .u252-wr{position:relative;width:100%}
 .u252-pl{position:relative;display:flex;align-items:center;gap:8px;width:100%;height:40px;padding:0 12px 0 5px;border:0;border-radius:999px;background:rgba(255,255,255,.78);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(59,99,246,.14),0 6px 16px -10px var(--ux-shadow-strong);font:inherit;color:var(--ux-ink);cursor:pointer;overflow:hidden;transition:box-shadow .25s,border-radius .35s}
 .u252-pl:hover,.u252-pl.g-hov{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ux-accent) 60%,transparent),0 8px 22px -10px var(--ux-accent)}
@@ -76,10 +76,10 @@
 .u252-pl:hover .u252-ar,.u252-pl.g-hov .u252-ar{transform:translateX(3px);color:var(--ux-accent)}
 .u252.is-open .u252-ar{transform:rotate(90deg);color:var(--ux-accent)}
 .u252-pn{position:absolute;left:0;right:0;top:100%;margin-top:6px;border-radius:18px;background:var(--ux-surface);box-shadow:0 0 0 1px var(--ux-line),0 18px 40px -18px var(--ux-shadow-strong);padding:0 16px;max-height:0;opacity:0;overflow:hidden;transition:max-height .45s cubic-bezier(.2,.9,.3,1),opacity .25s,padding .35s}
-.u252.is-open .u252-pn{max-height:260px;opacity:1;padding:12px 16px}
+.u252.is-open .u252-pn{max-height:340px;opacity:1;padding:12px 16px}
 .u252-pn h4{margin:0 0 6px;display:flex;justify-content:space-between;font-size:12.5px;font-weight:850;color:var(--ux-ink-3)}
 .u252-pn h4 a{color:var(--ux-accent);text-decoration:none}
-.u252-it{display:grid;grid-template-columns:48px 1fr;gap:8px;padding:8px 0;border-top:1px solid var(--ux-line);opacity:0;transform:translateY(-6px);transition:opacity .3s,transform .4s cubic-bezier(.3,1.3,.5,1)}
+.u252-it{display:grid;grid-template-columns:72px 1fr;gap:8px;padding:8px 0;border-top:1px solid var(--ux-line);opacity:0;transform:translateY(-6px);transition:opacity .3s,transform .4s cubic-bezier(.3,1.3,.5,1)}
 .u252.is-open .u252-it{opacity:1;transform:none}
 .u252-it time{font-size:12px;font-weight:800;color:var(--ux-ink-3);font-variant-numeric:tabular-nums;padding-top:1px}
 .u252-it b{display:block;font-size:14px;font-weight:850}

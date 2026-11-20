@@ -38,8 +38,8 @@ var DEFAULT_SETTINGS = [
   ['acceptMode', 'auto', '접수 받기: auto(기간에 따라) / open(지금 열기) / closed(지금 닫기)']
 ];
 
-var ALLOWED_EXT = ['hwp', 'hwpx'];
-var CONSENT_EXT = ['hwp', 'hwpx', 'pdf', 'jpg', 'jpeg', 'png'];  // 서명한 동의서는 사진으로도 받습니다
+var ALLOWED_EXT = ['hwp', 'hwpx', 'pdf', 'doc', 'docx'];      // 독후감: 문서 파일만
+var CONSENT_EXT = ['pdf', 'png', 'jpg', 'jpeg'];              // 개인정보 제공 동의서: PDF·그림 파일만
 var TOKEN_HOURS = 6;
 var MAX_LOGIN_FAILS = 5;
 var MAX_LOOKUP_FAILS = 5;   // 같은 이름으로 1시간에 틀릴 수 있는 횟수
@@ -215,20 +215,19 @@ function apply_(b) {
 
   var f = b.file || {};
   var ext = String(f.name || '').split('.').pop().toLowerCase();
-  if (ALLOWED_EXT.indexOf(ext) < 0) throw new Error('작품은 한글(HWP, HWPX) 파일로 제출해 주세요.');
-  if (!f.data) throw new Error('작품 파일을 첨부해 주세요.');
+  if (ALLOWED_EXT.indexOf(ext) < 0) throw new Error('독후감은 한글(HWP, HWPX), PDF, 워드(DOC, DOCX) 문서로 올려 주세요.');
+  if (!f.data) throw new Error('독후감 파일을 첨부해 주세요.');
   var bytes = Utilities.base64Decode(f.data);
   var maxMB = Number(s.maxFileMB) || 10;
-  if (bytes.length > maxMB * 1024 * 1024) throw new Error('작품 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
+  if (bytes.length > maxMB * 1024 * 1024) throw new Error('독후감 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
 
-  // 동의서는 출품 양식 안에 들어 있습니다. 따로 보낸 동의서 파일이 있을 때만 함께 저장합니다
-  var cf = b.consentFile || {}, cbytes = null, cext = '';
-  if (cf.data) {
-    cext = String(cf.name || '').split('.').pop().toLowerCase();
-    if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 동의서는 한글, PDF, 사진(JPG, PNG) 파일로 올려 주세요.');
-    cbytes = Utilities.base64Decode(cf.data);
-    if (cbytes.length > maxMB * 1024 * 1024) throw new Error('개인정보 동의서는 ' + maxMB + 'MB 이하로 올려 주세요.');
-  }
+  // 개인정보 제공 동의서(보호자 서명)는 PDF나 그림 파일로 따로 받습니다
+  var cf = b.consentFile || {};
+  if (!cf.data) throw new Error('개인정보 제공 동의서 파일을 첨부해 주세요.');
+  var cext = String(cf.name || '').split('.').pop().toLowerCase();
+  if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 제공 동의서는 PDF나 그림(PNG, JPG) 파일로 올려 주세요.');
+  var cbytes = Utilities.base64Decode(cf.data);
+  if (cbytes.length > maxMB * 1024 * 1024) throw new Error('개인정보 제공 동의서는 ' + maxMB + 'MB 이하로 올려 주세요.');
 
   d.phoneFmt = d.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3');
   d.level = Number(d.grade) <= 3 ? '저학년' : '고학년';
@@ -241,12 +240,13 @@ function apply_(b) {
     receiptNo = nextReceiptNo_(sh); // 지금 있는 가장 큰 번호 + 1 (모두 지우면 R0001부터)
 
     // 출품 규정의 파일 제목: 지역_학교명_학생명_도서명
-    fileName = [d.region, d.school, d.name, d.book].join('_').replace(/[\\/:*?"<>|]/g, '') + '.' + ext;
-    var blob = Utilities.newBlob(bytes, 'application/octet-stream', receiptNo + '_' + fileName);
+    // 파일 이름: 독후감_지역_학년_학생이름 / 개인정보제공동의서_지역_학년_학생이름
+    fileName = fileBase_('독후감', d) + '.' + ext;
+    var blob = Utilities.newBlob(bytes, 'application/octet-stream', fileName);
     var folder = DriveApp.getFolderById(s.folderId);
     var file = folder.createFile(blob);
     fileUrl = file.getUrl();
-    var cfile = cbytes ? folder.createFile(Utilities.newBlob(cbytes, 'application/octet-stream', receiptNo + '_동의서_' + d.name + '.' + cext)) : null;
+    var cfile = folder.createFile(Utilities.newBlob(cbytes, 'application/octet-stream', fileBase_('개인정보제공동의서', d) + '.' + cext));
 
     var stamp = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
     var row = [
@@ -284,8 +284,9 @@ function sendMails_(s, d, edited) {
     ['보호자', d.guardian],
     ['휴대전화', d.phoneFmt],
     ['이메일', d.email],
-    ['출품 양식 파일', d.fileName]
-  ].concat(d.consentName ? [['개인정보 동의서', d.consentName]] : []);
+    ['독후감 파일', d.fileName],
+    ['개인정보 제공 동의서', d.consentName || '-']
+  ];
   var table = '<table style="border-collapse:collapse;font-size:14px">' + rows.map(function (r) {
     return '<tr><th style="text-align:left;padding:6px 12px;background:#eef6ea;border:1px solid #d5e6cd">' + esc_(r[0]) +
       '</th><td style="padding:6px 12px;border:1px solid #d5e6cd">' + esc_(r[1]) + '</td></tr>';
@@ -410,17 +411,17 @@ function update_(b) {
   var f = b.file || null, bytes = null, ext = '';
   if (f && f.data) {
     ext = String(f.name || '').split('.').pop().toLowerCase();
-    if (ALLOWED_EXT.indexOf(ext) < 0) throw new Error('작품은 한글(HWP, HWPX) 파일로 제출해 주세요.');
+    if (ALLOWED_EXT.indexOf(ext) < 0) throw new Error('독후감은 한글(HWP, HWPX), PDF, 워드(DOC, DOCX) 문서로 올려 주세요.');
     bytes = Utilities.base64Decode(f.data);
     var maxMB = Number(s.maxFileMB) || 10;
-    if (bytes.length > maxMB * 1024 * 1024) throw new Error('작품 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
+    if (bytes.length > maxMB * 1024 * 1024) throw new Error('독후감 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
   }
   var cf = b.consentFile || null, cbytes = null, cext = '';
   if (cf && cf.data) {
     cext = String(cf.name || '').split('.').pop().toLowerCase();
-    if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 동의서는 한글, PDF, 사진(JPG, PNG) 파일로 올려 주세요.');
+    if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 제공 동의서는 PDF나 그림(PNG, JPG) 파일로 올려 주세요.');
     cbytes = Utilities.base64Decode(cf.data);
-    if (cbytes.length > (Number(s.maxFileMB) || 10) * 1024 * 1024) throw new Error('개인정보 동의서는 ' + (Number(s.maxFileMB) || 10) + 'MB 이하로 올려 주세요.');
+    if (cbytes.length > (Number(s.maxFileMB) || 10) * 1024 * 1024) throw new Error('개인정보 제공 동의서는 ' + (Number(s.maxFileMB) || 10) + 'MB 이하로 올려 주세요.');
   }
 
   var lock = LockService.getScriptLock();
@@ -437,7 +438,7 @@ function update_(b) {
     var phoneFmt = d.phone ? d.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3') : old[COL.phone];
     var email = d.email || old[COL.email];
     var level = Number(d.grade) <= 3 ? '저학년' : '고학년';
-    var baseName = [d.region, d.school, d.name, d.book].join('_').replace(/[\\/:*?"<>|]/g, '');
+    var baseName = fileBase_('독후감', d);
     var fileName = old[COL.fileName], fileUrl = old[COL.fileUrl];
     var oldFile = null;
     var m = /\/d\/([^/]+)/.exec(fileUrl);
@@ -445,14 +446,14 @@ function update_(b) {
 
     if (bytes) {
       // 새 작품 파일을 올리고, 예전 파일은 휴지통으로 보냅니다
-      var file = DriveApp.getFolderById(s.folderId).createFile(Utilities.newBlob(bytes, 'application/octet-stream', receiptNo + '_' + baseName + '.' + ext));
+      var file = DriveApp.getFolderById(s.folderId).createFile(Utilities.newBlob(bytes, 'application/octet-stream', baseName + '.' + ext));
       if (oldFile) oldFile.setTrashed(true);
       fileName = file.getName();
       fileUrl = file.getUrl();
     } else if (oldFile) {
-      // 이름·학교·도서가 바뀌면 파일 제목도 맞춰 바꿉니다
+      // 지역·학년·이름이 바뀌면 파일 제목도 맞춰 바꿉니다
       var oldExt = String(fileName).split('.').pop();
-      oldFile.setName(receiptNo + '_' + baseName + '.' + oldExt);
+      oldFile.setName(baseName + '.' + oldExt);
       fileName = oldFile.getName();
     }
 
@@ -465,9 +466,19 @@ function update_(b) {
     if (cbytes) {
       var oc = /\/d\/([^/]+)/.exec(consentUrl || '');
       if (oc) { try { DriveApp.getFileById(oc[1]).setTrashed(true); } catch (e) {} }
-      var nc = DriveApp.getFolderById(s.folderId).createFile(Utilities.newBlob(cbytes, 'application/octet-stream', receiptNo + '_동의서_' + d.name + '.' + cext));
+      var nc = DriveApp.getFolderById(s.folderId).createFile(Utilities.newBlob(cbytes, 'application/octet-stream', fileBase_('개인정보제공동의서', d) + '.' + cext));
       consentName = nc.getName(); consentUrl = nc.getUrl();
       sh.getRange(rowIdx, COL.consentName + 1, 1, 2).setNumberFormat('@').setValues([[consentName, consentUrl].map(noFormula_)]);
+    } else {
+      var ocm = /\/d\/([^/]+)/.exec(consentUrl || '');
+      if (ocm) {
+        try {
+          var ocf = DriveApp.getFileById(ocm[1]);
+          ocf.setName(fileBase_('개인정보제공동의서', d) + '.' + String(consentName).split('.').pop());
+          consentName = ocf.getName();
+          sh.getRange(rowIdx, COL.consentName + 1).setNumberFormat('@').setValue(noFormula_(consentName));
+        } catch (e) {}
+      }
     }
   } finally {
     lock.releaseLock();
@@ -691,6 +702,10 @@ function deleteEntries_(b) {
     lock.releaseLock();
   }
   return { ok: true, deleted: deleted, trashed: trashed };
+}
+
+function fileBase_(kind, d) {
+  return [kind, d.region, d.grade + '학년', d.name].join('_').replace(/[\\/:*?"<>|]/g, '');
 }
 
 function nextReceiptNo_(sh) {
