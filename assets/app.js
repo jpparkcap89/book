@@ -650,7 +650,6 @@
       if (res.maxFileMB) {
         MAX_MB = res.maxFileMB;
         $('#uploadHint').textContent = '한글(HWP, HWPX), PDF, 워드(DOC, DOCX) · 최대 ' + MAX_MB + 'MB';
-        $('#consentHint').textContent = 'PDF, 그림(PNG, JPG) · 최대 ' + MAX_MB + 'MB';
       }
       setDownloads({ form: res.formUrl, consent: res.consentUrl });
       var c = res.content || {};
@@ -732,9 +731,9 @@
       focus: function () { zone.scrollIntoView({ block: 'center' }); zone.focus({ preventScroll: true }); shake(zone); }
     };
   }
-  // 독후감은 문서 파일만, 개인정보 제공 동의서는 PDF·그림 파일만 받습니다
+  // 작품(독후감)은 문서 파일만 받습니다. 개인정보 제공 동의는 접수 화면의 동의 칸에서 받으므로 파일로 받지 않습니다
   var upload = makeUpload('#upload', /\.(hwp|hwpx|pdf|docx?)$/i, '한글(HWP, HWPX), PDF, 워드(DOC, DOCX) 문서만 올릴 수 있어요');
-  var consentUpload = makeUpload('#consentUpload', /\.(pdf|png|jpe?g)$/i, 'PDF나 그림(PNG, JPG) 파일만 올릴 수 있어요');
+  var consentUpload = { get: function () { return null; }, busy: function () { return false; }, reset: function () {}, focus: function () {} };
 
   /* ================= #068 끝까지 읽고 동의하는 약관 ================= */
   var consent = (function () {
@@ -809,9 +808,8 @@
       // 수정할 때는 전화번호·이메일을 비워 두면 그대로 둡니다
       if ((!ed || digits) && !/^01[016789]\d{7,8}$/.test(digits)) return fail('보호자 휴대전화 번호를 확인해 주세요.', f.phone);
       if ((!ed || email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('보호자 이메일 주소를 확인해 주세요.', f.email);
-      if (consentUpload.busy() || upload.busy()) return fail('파일을 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
+      if (upload.busy()) return fail('파일을 읽고 있어요. 잠시 뒤에 다시 눌러 주세요.');
       var cfile = consentUpload.get();
-      if (!ed && !cfile) { consentUpload.focus(); return fail('보호자가 서명한 개인정보 제공 동의서(PDF·그림 파일)를 올려 주세요.'); }
       var file = upload.get();
       if (!ed && !file) { upload.focus(); return fail('독후감 파일을 올려 주세요.'); }
       if (!ed && !consent.ok()) { consent.focus(); return fail('필수 동의 항목 3개에 모두 체크해 주세요.'); }

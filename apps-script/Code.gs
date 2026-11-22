@@ -221,13 +221,14 @@ function apply_(b) {
   var maxMB = Number(s.maxFileMB) || 10;
   if (bytes.length > maxMB * 1024 * 1024) throw new Error('독후감 파일은 ' + maxMB + 'MB 이하로 올려 주세요.');
 
-  // 개인정보 제공 동의서(보호자 서명)는 PDF나 그림 파일로 따로 받습니다
-  var cf = b.consentFile || {};
-  if (!cf.data) throw new Error('개인정보 제공 동의서 파일을 첨부해 주세요.');
-  var cext = String(cf.name || '').split('.').pop().toLowerCase();
-  if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 제공 동의서는 PDF나 그림(PNG, JPG) 파일로 올려 주세요.');
-  var cbytes = Utilities.base64Decode(cf.data);
-  if (cbytes.length > maxMB * 1024 * 1024) throw new Error('개인정보 제공 동의서는 ' + maxMB + 'MB 이하로 올려 주세요.');
+  // 개인정보 제공 동의는 접수 화면의 동의 칸으로 받습니다. 따로 보낸 동의서 파일이 있을 때만 함께 저장합니다
+  var cf = b.consentFile || {}, cbytes = null, cext = '';
+  if (cf.data) {
+    cext = String(cf.name || '').split('.').pop().toLowerCase();
+    if (CONSENT_EXT.indexOf(cext) < 0) throw new Error('개인정보 제공 동의서는 PDF나 그림(PNG, JPG) 파일로 올려 주세요.');
+    cbytes = Utilities.base64Decode(cf.data);
+    if (cbytes.length > maxMB * 1024 * 1024) throw new Error('개인정보 제공 동의서는 ' + maxMB + 'MB 이하로 올려 주세요.');
+  }
 
   d.phoneFmt = d.phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3');
   d.level = Number(d.grade) <= 3 ? '저학년' : '고학년';
@@ -246,7 +247,7 @@ function apply_(b) {
     var folder = DriveApp.getFolderById(s.folderId);
     var file = folder.createFile(blob);
     fileUrl = file.getUrl();
-    var cfile = folder.createFile(Utilities.newBlob(cbytes, 'application/octet-stream', fileBase_('개인정보제공동의서', d) + '.' + cext));
+    var cfile = cbytes ? folder.createFile(Utilities.newBlob(cbytes, 'application/octet-stream', fileBase_('개인정보제공동의서', d) + '.' + cext)) : null;
 
     var stamp = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
     var row = [
@@ -285,7 +286,7 @@ function sendMails_(s, d, edited) {
     ['휴대전화', d.phoneFmt],
     ['이메일', d.email],
     ['독후감 파일', d.fileName],
-    ['개인정보 제공 동의서', d.consentName || '-']
+    ['개인정보 제공 동의', '접수 화면에서 동의함']
   ];
   var table = '<table style="border-collapse:collapse;font-size:14px">' + rows.map(function (r) {
     return '<tr><th style="text-align:left;padding:6px 12px;background:#eef6ea;border:1px solid #d5e6cd">' + esc_(r[0]) +
@@ -451,7 +452,7 @@ function update_(b) {
       fileName = file.getName();
       fileUrl = file.getUrl();
     } else if (oldFile) {
-      // 지역·학년·이름·도서가 바뀌면 파일 제목도 맞춰 바꿉니다
+      // 학년·지역·학교·이름·도서가 바뀌면 파일 제목도 맞춰 바꿉니다
       var oldExt = String(fileName).split('.').pop();
       oldFile.setName(baseName + '.' + oldExt);
       fileName = oldFile.getName();
@@ -704,10 +705,12 @@ function deleteEntries_(b) {
   return { ok: true, deleted: deleted, trashed: trashed };
 }
 
-// 개인정보제공동의서_지역_학년_학생이름 / 독후감_지역_학년_학생이름_도서명
+// 작품(독후감): 학년_지역_학교명_학생명_도서명  (예: 4학년_경기_숲속초등학교_김숲속_꿈의 공책)
+// 따로 받은 동의서(있을 때만): 개인정보제공동의서_지역_학년_학생이름
 function fileBase_(kind, d) {
-  var parts = [kind, d.region, d.grade + '학년', d.name];
-  if (kind === '독후감') parts.push(d.book);
+  var parts = kind === '독후감'
+    ? [d.grade + '학년', d.region, d.school, d.name, d.book]
+    : [kind, d.region, d.grade + '학년', d.name];
   return parts.join('_').replace(/[\\/:*?"<>|]/g, '').trim();
 }
 
