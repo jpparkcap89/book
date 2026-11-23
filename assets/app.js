@@ -585,7 +585,7 @@
     notice.setLog([
       [fmtMDw(period.openAt), '접수 시작', fmtYMDw(period.openAt) + ' ~ ' + fmtYMDw(period.deadline) + ' ' + fmtHM(period.deadline)],
       ['2. 4.(목)', '수상작 발표', '대회 홈페이지 및 카페(숲속동화문학회), 수상자 개별 문자 안내'],
-      ['2.27.(토)', '당선작 시상식', '시간과 장소는 추후 안내']
+      ['추후 안내', '당선작 시상식', '일시와 장소는 추후 안내']
     ]);
     if (p === 'soon') {
       var d = dday(period.openAt);
