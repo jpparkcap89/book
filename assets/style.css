@@ -418,3 +418,12 @@ table.entries tr.is-checked td { background: rgba(59, 99, 246, .06); }
 .hero-title .grad { font-size: clamp(26px, 5.2vw, 50px); line-height: 1.2; }
 @media (max-width: 520px) { .hero-title .org-line { font-size: 20px; } }
 .hero-title .grad { text-wrap: balance; }
+
+/* 도서 링크 안내: 구매 링크가 아님을 표시 */
+.not-buy { display: flex; gap: 12px; align-items: flex-start; max-width: 760px; margin: 0 auto 24px; padding: 16px 20px; border-radius: 16px; background: #fff7e0; border: 2px dashed #f0b429; color: #5a4300; text-align: left; }
+.not-buy .nb-ico { font-size: 24px; line-height: 1.2; }
+.not-buy b { font-size: 17px; color: #8a5a00; }
+.not-buy p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.6; }
+.not-buy strong { color: #b34700; }
+.book .info-tag { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 999px; background: #eef4ff; color: #3b5bdb; font-size: 12px; font-weight: 700; }
+@media (max-width: 640px) { .not-buy { padding: 14px; } .not-buy b { font-size: 15.5px; } .not-buy p { font-size: 13.5px; } }

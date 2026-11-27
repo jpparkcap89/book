@@ -398,9 +398,10 @@
   (function () {
     $('#bookGrid').innerHTML = BOOKS.map(function (b, i) {
       var n = ('0' + (i + 1)).slice(-2);
-      return '<a class="tile book" href="https://www.yes24.com/Product/Goods/' + b[3] + '" target="_blank" rel="noopener" title="예스24에서 ' + esc(b[0]) + ' 보기">' +
+      return '<a class="tile book" href="https://www.yes24.com/Product/Goods/' + b[3] + '" target="_blank" rel="noopener" title="' + esc(b[0]) + ' 도서 소개 보기 (구매 링크 아님)">' +
         '<div class="cover"><img src="covers/' + n + '.jpg" alt="' + esc(b[0]) + ' 표지 (출처: 예스24)" loading="lazy"></div>' +
-        '<div class="t">' + esc(b[0]) + '</div><div class="a">' + esc(b[1]) + '<br>' + esc(b[2]) + '</div></a>';
+        '<div class="t">' + esc(b[0]) + '</div><div class="a">' + esc(b[1]) + '<br>' + esc(b[2]) + '</div>' +
+        '<span class="info-tag">🔍 도서 정보 보기</span></a>';
     }).join('');
     var sel = $('#book');
     BOOKS.forEach(function (b) {
