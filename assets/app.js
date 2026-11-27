@@ -650,7 +650,7 @@
       period.mode = res.acceptMode || 'auto';
       if (res.maxFileMB) {
         MAX_MB = res.maxFileMB;
-        $('#uploadHint').textContent = '한글(HWP, HWPX), PDF, 워드(DOC, DOCX) · 최대 ' + MAX_MB + 'MB';
+        $('#uploadHint').textContent = '출품 양식에 작성한 파일 · 최대 ' + MAX_MB + 'MB';
       }
       setDownloads({ form: res.formUrl, consent: res.consentUrl });
       var c = res.content || {};
